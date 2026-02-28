@@ -44,6 +44,7 @@ src/generated/
 
 # generated documents
 /storage/
+/generated-docs/
 
 # IDE
 .idea/

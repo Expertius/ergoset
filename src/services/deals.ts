@@ -1,0 +1,410 @@
+import { prisma } from "@/lib/db";
+import type { DealStatus, DealType } from "@/generated/prisma/browser";
+import type {
+  DealQuickCreateInput,
+  RentalExtendInput,
+} from "@/domain/deals/validation";
+
+export type DealFilters = {
+  search?: string;
+  status?: DealStatus;
+  type?: DealType;
+};
+
+const BLOCKING_STATUSES: DealStatus[] = [
+  "booked",
+  "delivery_scheduled",
+  "delivered",
+  "active",
+  "extended",
+  "return_scheduled",
+];
+
+export async function getDeals(filters?: DealFilters) {
+  const where: Record<string, unknown> = {};
+
+  if (filters?.status) where.status = filters.status;
+  if (filters?.type) where.type = filters.type;
+
+  if (filters?.search) {
+    where.client = {
+      fullName: { contains: filters.search, mode: "insensitive" },
+    };
+  }
+
+  return prisma.deal.findMany({
+    where,
+    include: {
+      client: true,
+      rentals: { include: { asset: true } },
+      _count: { select: { payments: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
+}
+
+export async function getDealById(id: string) {
+  return prisma.deal.findUnique({
+    where: { id },
+    include: {
+      client: true,
+      rentals: {
+        include: {
+          asset: true,
+          periods: { orderBy: { periodNumber: "asc" } },
+          accessories: { include: { accessory: true } },
+          deliveryTasks: { orderBy: { createdAt: "desc" } },
+        },
+      },
+      payments: { orderBy: { date: "desc" } },
+      documents: { orderBy: { createdAt: "desc" } },
+      expenses: { orderBy: { date: "desc" } },
+    },
+  });
+}
+
+export async function checkAssetConflict(
+  assetId: string,
+  startDate: Date,
+  endDate: Date,
+  excludeRentalId?: string
+) {
+  const conflicts = await prisma.rental.findMany({
+    where: {
+      assetId,
+      ...(excludeRentalId ? { id: { not: excludeRentalId } } : {}),
+      deal: { status: { in: BLOCKING_STATUSES } },
+      startDate: { lt: endDate },
+      endDate: { gt: startDate },
+    },
+    include: { deal: { include: { client: true } } },
+  });
+  return conflicts;
+}
+
+export async function createDealWithRental(data: DealQuickCreateInput) {
+  const conflicts = await checkAssetConflict(
+    data.assetId,
+    data.startDate,
+    data.endDate
+  );
+  if (conflicts.length > 0) {
+    const c = conflicts[0];
+    throw new Error(
+      `Конфликт дат: станция занята клиентом ${c.deal.client.fullName} (${c.startDate.toLocaleDateString("ru")} — ${c.endDate.toLocaleDateString("ru")})`
+    );
+  }
+
+  const totalPlanned =
+    (data.rentAmount || 0) +
+    (data.deliveryAmount || 0) +
+    (data.assemblyAmount || 0) -
+    (data.discountAmount || 0);
+
+  return prisma.$transaction(async (tx) => {
+    const deal = await tx.deal.create({
+      data: {
+        type: data.type,
+        status: "booked",
+        clientId: data.clientId,
+        source: data.source,
+        comment: data.comment,
+      },
+    });
+
+    const rental = await tx.rental.create({
+      data: {
+        dealId: deal.id,
+        assetId: data.assetId,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        plannedMonths: data.plannedMonths,
+        rentAmount: data.rentAmount || 0,
+        deliveryAmount: data.deliveryAmount || 0,
+        assemblyAmount: data.assemblyAmount || 0,
+        depositAmount: data.depositAmount || 0,
+        discountAmount: data.discountAmount || 0,
+        totalPlannedAmount: totalPlanned,
+        addressDelivery: data.addressDelivery,
+        addressPickup: data.addressPickup,
+        notes: data.notes,
+      },
+    });
+
+    await tx.rentalPeriod.create({
+      data: {
+        rentalId: rental.id,
+        periodNumber: 1,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        amountRent: data.rentAmount || 0,
+        amountDelivery: data.deliveryAmount || 0,
+        amountAssembly: data.assemblyAmount || 0,
+        amountDiscount: data.discountAmount || 0,
+        amountTotal: totalPlanned,
+        type: "first",
+      },
+    });
+
+    await tx.asset.update({
+      where: { id: data.assetId },
+      data: { status: "reserved" },
+    });
+
+    return deal;
+  });
+}
+
+export async function extendRental(data: RentalExtendInput) {
+  const rental = await prisma.rental.findUnique({
+    where: { id: data.rentalId },
+    include: { deal: true, periods: { orderBy: { periodNumber: "desc" }, take: 1 } },
+  });
+  if (!rental) throw new Error("Аренда не найдена");
+
+  if (data.newEndDate <= rental.endDate) {
+    throw new Error("Новая дата окончания должна быть позже текущей");
+  }
+
+  const conflicts = await checkAssetConflict(
+    rental.assetId,
+    rental.endDate,
+    data.newEndDate,
+    rental.id
+  );
+  if (conflicts.length > 0) {
+    throw new Error("Конфликт дат при продлении");
+  }
+
+  const lastPeriod = rental.periods[0];
+  const nextNumber = lastPeriod ? lastPeriod.periodNumber + 1 : 2;
+  const amountTotal =
+    (data.amountRent || 0) + (data.amountDelivery || 0) - (data.amountDiscount || 0);
+
+  return prisma.$transaction(async (tx) => {
+    await tx.rentalPeriod.create({
+      data: {
+        rentalId: rental.id,
+        periodNumber: nextNumber,
+        startDate: rental.endDate,
+        endDate: data.newEndDate,
+        amountRent: data.amountRent || 0,
+        amountDelivery: data.amountDelivery || 0,
+        amountDiscount: data.amountDiscount || 0,
+        amountTotal,
+        type: "extension",
+        comment: data.comment,
+      },
+    });
+
+    await tx.rental.update({
+      where: { id: rental.id },
+      data: {
+        endDate: data.newEndDate,
+        rentAmount: { increment: data.amountRent || 0 },
+        totalPlannedAmount: { increment: amountTotal },
+      },
+    });
+
+    await tx.deal.update({
+      where: { id: rental.dealId },
+      data: { status: "extended" },
+    });
+
+    return rental;
+  });
+}
+
+export async function closeRentalByReturn(rentalId: string) {
+  const rental = await prisma.rental.findUnique({
+    where: { id: rentalId },
+    include: { deal: true },
+  });
+  if (!rental) throw new Error("Аренда не найдена");
+
+  return prisma.$transaction(async (tx) => {
+    await tx.rental.update({
+      where: { id: rentalId },
+      data: { actualEndDate: new Date(), closeReason: "return" },
+    });
+
+    await tx.deal.update({
+      where: { id: rental.dealId },
+      data: { status: "closed_return" },
+    });
+
+    await tx.asset.update({
+      where: { id: rental.assetId },
+      data: { status: "available" },
+    });
+
+    // Release accessory reservations
+    const accessories = await tx.rentalAccessoryLine.findMany({
+      where: { rentalId },
+    });
+    for (const acc of accessories) {
+      const item = await tx.inventoryItem.findFirst({
+        where: { accessoryId: acc.accessoryId },
+      });
+      if (item) {
+        await tx.inventoryItem.update({
+          where: { id: item.id },
+          data: { qtyReserved: { decrement: acc.qty } },
+        });
+        await tx.inventoryMovement.create({
+          data: {
+            accessoryId: acc.accessoryId,
+            type: "return_item",
+            qty: acc.qty,
+            relatedRentalId: rentalId,
+            comment: "Возврат при закрытии аренды",
+          },
+        });
+      }
+    }
+
+    return rental;
+  });
+}
+
+export async function closeRentalByBuyout(
+  rentalId: string,
+  purchaseAmount?: number
+) {
+  const rental = await prisma.rental.findUnique({
+    where: { id: rentalId },
+    include: { deal: true },
+  });
+  if (!rental) throw new Error("Аренда не найдена");
+
+  return prisma.$transaction(async (tx) => {
+    await tx.rental.update({
+      where: { id: rentalId },
+      data: {
+        actualEndDate: new Date(),
+        closeReason: "purchase",
+        purchaseConversionAmount: purchaseAmount,
+      },
+    });
+
+    await tx.deal.update({
+      where: { id: rental.dealId },
+      data: { status: "closed_purchase" },
+    });
+
+    await tx.asset.update({
+      where: { id: rental.assetId },
+      data: { status: "sold" },
+    });
+
+    return rental;
+  });
+}
+
+export async function cancelDeal(dealId: string) {
+  const deal = await prisma.deal.findUnique({
+    where: { id: dealId },
+    include: { rentals: true },
+  });
+  if (!deal) throw new Error("Сделка не найдена");
+
+  return prisma.$transaction(async (tx) => {
+    await tx.deal.update({
+      where: { id: dealId },
+      data: { status: "canceled" },
+    });
+
+    for (const rental of deal.rentals) {
+      await tx.asset.update({
+        where: { id: rental.assetId },
+        data: { status: "available" },
+      });
+
+      const accessories = await tx.rentalAccessoryLine.findMany({
+        where: { rentalId: rental.id },
+      });
+      for (const acc of accessories) {
+        const item = await tx.inventoryItem.findFirst({
+          where: { accessoryId: acc.accessoryId },
+        });
+        if (item) {
+          await tx.inventoryItem.update({
+            where: { id: item.id },
+            data: { qtyReserved: { decrement: acc.qty } },
+          });
+        }
+      }
+    }
+
+    return deal;
+  });
+}
+
+export async function activateDeal(dealId: string) {
+  const deal = await prisma.deal.findUnique({
+    where: { id: dealId },
+    include: { rentals: true },
+  });
+  if (!deal) throw new Error("Сделка не найдена");
+
+  return prisma.$transaction(async (tx) => {
+    await tx.deal.update({
+      where: { id: dealId },
+      data: { status: "active" },
+    });
+
+    for (const rental of deal.rentals) {
+      await tx.asset.update({
+        where: { id: rental.assetId },
+        data: { status: "rented" },
+      });
+    }
+
+    return deal;
+  });
+}
+
+export async function getUpcomingReturns(daysAhead: number = 7) {
+  const now = new Date();
+  const until = new Date();
+  until.setDate(until.getDate() + daysAhead);
+
+  return prisma.rental.findMany({
+    where: {
+      deal: { status: { in: ["active", "extended"] } },
+      endDate: { gte: now, lte: until },
+      actualEndDate: null,
+    },
+    include: {
+      asset: true,
+      deal: { include: { client: true } },
+    },
+    orderBy: { endDate: "asc" },
+  });
+}
+
+export async function getIdleAssets(idleDaysThreshold: number = 14) {
+  const threshold = new Date();
+  threshold.setDate(threshold.getDate() - idleDaysThreshold);
+
+  const assets = await prisma.asset.findMany({
+    where: {
+      status: "available",
+      isActive: true,
+    },
+    include: {
+      rentals: {
+        where: { actualEndDate: { not: null } },
+        orderBy: { actualEndDate: "desc" },
+        take: 1,
+      },
+    },
+  });
+
+  return assets.filter((a) => {
+    if (a.rentals.length === 0) return true;
+    const lastEnd = a.rentals[0].actualEndDate!;
+    return lastEnd < threshold;
+  });
+}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getSessionFromToken } from "@/lib/auth";
+import { canAccessRoute } from "@/lib/rbac";
 
 const COOKIE_NAME = "ergoset-session";
 
@@ -25,6 +26,12 @@ export function middleware(request: NextRequest) {
   }
 
   if (session && isLoginPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  if (session && !isLoginPage && !canAccessRoute(pathname, session)) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

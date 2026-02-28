@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { assetCreateSchema, assetUpdateSchema } from "@/domain/assets/validation";
 import * as assetService from "@/services/assets";
+import { logAudit } from "@/lib/audit";
 
 export type ActionResult = {
   success: boolean;
@@ -23,7 +24,8 @@ export async function createAssetAction(formData: FormData): Promise<ActionResul
   }
 
   try {
-    await assetService.createAsset(parsed.data);
+    const asset = await assetService.createAsset(parsed.data);
+    await logAudit("asset", asset.id, "create", { code: parsed.data.code });
     revalidatePath("/assets");
     return { success: true };
   } catch (e) {
@@ -47,6 +49,7 @@ export async function updateAssetAction(formData: FormData): Promise<ActionResul
 
   try {
     await assetService.updateAsset(parsed.data);
+    await logAudit("asset", parsed.data.id, "update");
     revalidatePath("/assets");
     revalidatePath(`/assets/${parsed.data.id}`);
     return { success: true };
@@ -59,6 +62,7 @@ export async function updateAssetAction(formData: FormData): Promise<ActionResul
 export async function deleteAssetAction(id: string): Promise<ActionResult> {
   try {
     await assetService.deleteAsset(id);
+    await logAudit("asset", id, "delete");
     revalidatePath("/assets");
     return { success: true };
   } catch (e) {

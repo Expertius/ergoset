@@ -1,4 +1,8 @@
-import type { AssetStatus, DealStatus, DealType, PaymentKind, PaymentStatus, AccessoryCategory } from "@/generated/prisma/browser";
+import type {
+  AssetStatus, DealStatus, DealType, PaymentKind, PaymentStatus,
+  PaymentMethod, AccessoryCategory, ExpenseCategory, DocumentType,
+  DocumentStatus, DeliveryTaskType, DeliveryTaskStatus,
+} from "@/generated/prisma/browser";
 
 export const ASSET_STATUS_LABELS: Record<AssetStatus, string> = {
   available: "Доступен",
@@ -27,6 +31,15 @@ export const DEAL_TYPE_LABELS: Record<DealType, string> = {
   exchange: "Обмен",
 };
 
+export const DEAL_TYPE_COLORS: Record<DealType, string> = {
+  rent: "bg-blue-100 text-blue-800",
+  sale: "bg-purple-100 text-purple-800",
+  rent_to_purchase: "bg-indigo-100 text-indigo-800",
+  reservation: "bg-yellow-100 text-yellow-800",
+  return_deal: "bg-orange-100 text-orange-800",
+  exchange: "bg-teal-100 text-teal-800",
+};
+
 export const DEAL_STATUS_LABELS: Record<DealStatus, string> = {
   lead: "Лид",
   booked: "Забронировано",
@@ -38,6 +51,19 @@ export const DEAL_STATUS_LABELS: Record<DealStatus, string> = {
   closed_return: "Закрыто (возврат)",
   closed_purchase: "Закрыто (выкуп)",
   canceled: "Отменено",
+};
+
+export const DEAL_STATUS_COLORS: Record<DealStatus, string> = {
+  lead: "bg-gray-100 text-gray-800",
+  booked: "bg-yellow-100 text-yellow-800",
+  delivery_scheduled: "bg-orange-100 text-orange-800",
+  delivered: "bg-cyan-100 text-cyan-800",
+  active: "bg-green-100 text-green-800",
+  extended: "bg-blue-100 text-blue-800",
+  return_scheduled: "bg-amber-100 text-amber-800",
+  closed_return: "bg-slate-100 text-slate-800",
+  closed_purchase: "bg-purple-100 text-purple-800",
+  canceled: "bg-red-100 text-red-800",
 };
 
 export const PAYMENT_KIND_LABELS: Record<PaymentKind, string> = {
@@ -59,6 +85,22 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   canceled: "Отменён",
 };
 
+export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
+  planned: "bg-yellow-100 text-yellow-800",
+  paid: "bg-green-100 text-green-800",
+  partially_paid: "bg-orange-100 text-orange-800",
+  refunded: "bg-red-100 text-red-800",
+  canceled: "bg-gray-100 text-gray-800",
+};
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  cash: "Наличные",
+  card: "Карта",
+  bank_transfer: "Перевод",
+  sbp: "СБП",
+  other: "Другое",
+};
+
 export const ACCESSORY_CATEGORY_LABELS: Record<AccessoryCategory, string> = {
   bracket: "Кронштейн",
   rail: "Шина",
@@ -67,4 +109,53 @@ export const ACCESSORY_CATEGORY_LABELS: Record<AccessoryCategory, string> = {
   cable: "Кабель",
   adapter: "Переходник",
   other: "Прочее",
+};
+
+export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
+  asset_purchase: "Закупка станции",
+  accessory_purchase: "Закупка аксессуаров",
+  delivery_cost: "Доставка",
+  assembly_cost: "Сборка",
+  repair: "Ремонт",
+  tax: "Налоги",
+  ads: "Реклама",
+  other: "Прочее",
+};
+
+export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
+  rental_contract: "Договор аренды",
+  transfer_act: "Акт приёма-передачи",
+  return_act: "Акт возврата",
+  buyout_doc: "Договор выкупа",
+  equipment_appendix: "Приложение (оборудование)",
+};
+
+export const DOCUMENT_STATUS_LABELS: Record<DocumentStatus, string> = {
+  draft: "Черновик",
+  generated: "Сгенерирован",
+  sent: "Отправлен",
+  signed: "Подписан",
+  archived: "Архив",
+};
+
+export const DOCUMENT_STATUS_COLORS: Record<DocumentStatus, string> = {
+  draft: "bg-gray-100 text-gray-800",
+  generated: "bg-blue-100 text-blue-800",
+  sent: "bg-yellow-100 text-yellow-800",
+  signed: "bg-green-100 text-green-800",
+  archived: "bg-slate-100 text-slate-800",
+};
+
+export const DELIVERY_TASK_TYPE_LABELS: Record<DeliveryTaskType, string> = {
+  delivery: "Доставка",
+  pickup: "Забор",
+  replacement: "Замена",
+  maintenance_visit: "Обслуживание",
+};
+
+export const DELIVERY_TASK_STATUS_LABELS: Record<DeliveryTaskStatus, string> = {
+  planned: "Запланировано",
+  in_progress: "В процессе",
+  completed: "Выполнено",
+  canceled: "Отменено",
 };
