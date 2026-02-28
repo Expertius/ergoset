@@ -1,0 +1,484 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── ENUMS ──────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  LOGISTICS
+}
+
+enum AssetStatus {
+  available
+  reserved
+  rented
+  maintenance
+  sold
+  archived
+}
+
+enum DealType {
+  rent
+  sale
+  rent_to_purchase
+  reservation
+  return_deal
+  exchange
+}
+
+enum DealStatus {
+  lead
+  booked
+  delivery_scheduled
+  delivered
+  active
+  extended
+  return_scheduled
+  closed_return
+  closed_purchase
+  canceled
+}
+
+enum PaymentMethod {
+  cash
+  card
+  bank_transfer
+  sbp
+  other
+}
+
+enum PaymentKind {
+  rent
+  delivery
+  assembly
+  deposit
+  sale
+  refund
+  penalty
+  discount_adjustment
+}
+
+enum PaymentStatus {
+  planned
+  paid
+  partially_paid
+  refunded
+  canceled
+}
+
+enum RentalPeriodType {
+  first
+  extension
+  final
+  purchase_transition
+}
+
+enum DeliveryTaskType {
+  delivery
+  pickup
+  replacement
+  maintenance_visit
+}
+
+enum DeliveryTaskStatus {
+  planned
+  in_progress
+  completed
+  canceled
+}
+
+enum DocumentType {
+  rental_contract
+  transfer_act
+  return_act
+  buyout_doc
+  equipment_appendix
+}
+
+enum DocumentStatus {
+  draft
+  generated
+  sent
+  signed
+  archived
+}
+
+enum ExpenseCategory {
+  asset_purchase
+  accessory_purchase
+  delivery_cost
+  assembly_cost
+  repair
+  tax
+  ads
+  other
+}
+
+enum InventoryMovementType {
+  incoming
+  reserve
+  issue
+  return_item
+  writeoff
+  repair
+  lost
+}
+
+enum AccessoryCategory {
+  bracket
+  rail
+  platform
+  block
+  cable
+  adapter
+  other
+}
+
+// ─── MODELS ─────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  fullName      String?
+  role          UserRole  @default(MANAGER)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  createdDeals  Deal[]     @relation("DealCreatedBy")
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+model Asset {
+  id             String      @id @default(cuid())
+  code           String      @unique
+  name           String
+  brand          String?
+  model          String?
+  type           String?
+  upholstery     String?
+  color          String?
+  tableType      String?
+  description    String?
+  purchasePrice  Int?
+  dealerPrice    Int?
+  retailPrice    Int?
+  purchaseDate   DateTime?
+  status         AssetStatus @default(available)
+  location       String?
+  notes          String?
+  isActive       Boolean     @default(true)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  rentals        Rental[]
+  expenses       Expense[]
+  configurations ConfigurationLine[] @relation("AssetConfigurations")
+
+  @@map("assets")
+}
+
+model Accessory {
+  id             String            @id @default(cuid())
+  sku            String            @unique
+  name           String
+  category       AccessoryCategory @default(other)
+  purchasePrice  Int?
+  dealerPrice    Int?
+  retailPrice    Int?
+  description    String?
+  notes          String?
+  isActive       Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  inventoryItems      InventoryItem[]
+  configurationLines  ConfigurationLine[]
+  rentalAccessories   RentalAccessoryLine[]
+  movements           InventoryMovement[]
+
+  @@map("accessories")
+}
+
+model InventoryItem {
+  id           String    @id @default(cuid())
+  accessoryId  String
+  location     String    @default("warehouse")
+  qtyOnHand    Int       @default(0)
+  qtyReserved  Int       @default(0)
+  updatedAt    DateTime  @updatedAt
+
+  accessory    Accessory @relation(fields: [accessoryId], references: [id])
+
+  @@unique([accessoryId, location])
+  @@map("inventory_items")
+}
+
+model Configuration {
+  id                  String    @id @default(cuid())
+  name                String
+  description         String?
+  defaultRentPrice1m  Int?
+  defaultRentPrice2m  Int?
+  defaultRentPrice3m  Int?
+  defaultSalePrice    Int?
+  defaultDeliveryPrice Int?
+  isTemplate          Boolean   @default(true)
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  lines    ConfigurationLine[]
+  rentals  Rental[]
+
+  @@map("configurations")
+}
+
+model ConfigurationLine {
+  id              String  @id @default(cuid())
+  configurationId String
+  accessoryId     String?
+  assetId         String?
+  qty             Int     @default(1)
+  isRequired      Boolean @default(true)
+  defaultPrice    Int?
+
+  configuration   Configuration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  accessory       Accessory?    @relation(fields: [accessoryId], references: [id])
+  asset           Asset?        @relation("AssetConfigurations", fields: [assetId], references: [id])
+
+  @@map("configuration_lines")
+}
+
+model Client {
+  id                   String    @id @default(cuid())
+  fullName             String
+  phone                String?
+  email                String?
+  birthDate            DateTime?
+  passportSeries       String?
+  passportNumber       String?
+  passportIssuedBy     String?
+  passportIssueDate    DateTime?
+  registrationAddress  String?
+  actualAddress        String?
+  notes                String?
+  tags                 String[]
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  deals  Deal[]
+
+  @@map("clients")
+}
+
+model Deal {
+  id          String     @id @default(cuid())
+  type        DealType
+  status      DealStatus @default(lead)
+  clientId    String
+  createdById String?
+  source      String?
+  comment     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  client    Client    @relation(fields: [clientId], references: [id])
+  createdBy User?     @relation("DealCreatedBy", fields: [createdById], references: [id])
+  rentals   Rental[]
+  payments  Payment[]
+  expenses  Expense[]
+  documents Document[]
+
+  @@map("deals")
+}
+
+model Rental {
+  id                        String    @id @default(cuid())
+  dealId                    String
+  assetId                   String
+  configurationId           String?
+  startDate                 DateTime
+  endDate                   DateTime
+  plannedMonths             Int?
+  actualEndDate             DateTime?
+  rentAmount                Int       @default(0)
+  deliveryAmount            Int       @default(0)
+  assemblyAmount            Int       @default(0)
+  depositAmount             Int       @default(0)
+  discountAmount            Int       @default(0)
+  totalPlannedAmount        Int       @default(0)
+  closeReason               String?
+  purchaseConversionAmount  Int?
+  addressDelivery           String?
+  addressPickup             String?
+  deliveryInstructions      String?
+  notes                     String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  deal           Deal            @relation(fields: [dealId], references: [id])
+  asset          Asset           @relation(fields: [assetId], references: [id])
+  configuration  Configuration?  @relation(fields: [configurationId], references: [id])
+
+  periods        RentalPeriod[]
+  accessories    RentalAccessoryLine[]
+  deliveryTasks  DeliveryTask[]
+  payments       Payment[]
+  documents      Document[]
+  movements      InventoryMovement[]
+
+  @@map("rentals")
+}
+
+model RentalPeriod {
+  id              String           @id @default(cuid())
+  rentalId        String
+  periodNumber    Int
+  startDate       DateTime
+  endDate         DateTime
+  amountRent      Int              @default(0)
+  amountDelivery  Int              @default(0)
+  amountAssembly  Int              @default(0)
+  amountDiscount  Int              @default(0)
+  amountTotal     Int              @default(0)
+  type            RentalPeriodType @default(first)
+  comment         String?
+  createdAt       DateTime         @default(now())
+
+  rental  Rental  @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@map("rental_periods")
+}
+
+model RentalAccessoryLine {
+  id          String  @id @default(cuid())
+  rentalId    String
+  accessoryId String
+  qty         Int     @default(1)
+  price       Int     @default(0)
+  isIncluded  Boolean @default(false)
+  comment     String?
+
+  rental    Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  accessory Accessory @relation(fields: [accessoryId], references: [id])
+
+  @@map("rental_accessory_lines")
+}
+
+model DeliveryTask {
+  id          String             @id @default(cuid())
+  rentalId    String
+  type        DeliveryTaskType
+  plannedAt   DateTime?
+  status      DeliveryTaskStatus @default(planned)
+  assignee    String?
+  address     String?
+  instructions String?
+  comment     String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  rental  Rental  @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@map("delivery_tasks")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  dealId         String
+  rentalId       String?
+  date           DateTime
+  amount         Int
+  currency       String        @default("RUB")
+  method         PaymentMethod @default(cash)
+  kind           PaymentKind
+  status         PaymentStatus @default(planned)
+  taxReceiptUrl  String?
+  comment        String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  deal    Deal    @relation(fields: [dealId], references: [id])
+  rental  Rental? @relation(fields: [rentalId], references: [id])
+
+  @@map("payments")
+}
+
+model Expense {
+  id         String          @id @default(cuid())
+  category   ExpenseCategory
+  assetId    String?
+  dealId     String?
+  rentalId   String?
+  date       DateTime
+  amount     Int
+  comment    String?
+  createdAt  DateTime        @default(now())
+
+  asset  Asset? @relation(fields: [assetId], references: [id])
+  deal   Deal?  @relation(fields: [dealId], references: [id])
+
+  @@map("expenses")
+}
+
+model Document {
+  id            String         @id @default(cuid())
+  dealId        String
+  rentalId      String?
+  type          DocumentType
+  templateName  String?
+  filePath      String?
+  publicUrl     String?
+  status        DocumentStatus @default(draft)
+  signatureUrl  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  deal    Deal    @relation(fields: [dealId], references: [id])
+  rental  Rental? @relation(fields: [rentalId], references: [id])
+
+  @@map("documents")
+}
+
+model InventoryMovement {
+  id              String                @id @default(cuid())
+  accessoryId     String
+  type            InventoryMovementType
+  qty             Int
+  locationFrom    String?
+  locationTo      String?
+  relatedRentalId String?
+  date            DateTime              @default(now())
+  comment         String?
+
+  accessory Accessory @relation(fields: [accessoryId], references: [id])
+  rental    Rental?   @relation(fields: [relatedRentalId], references: [id])
+
+  @@map("inventory_movements")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  entityType String
+  entityId   String
+  action     String
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  user  User?  @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
