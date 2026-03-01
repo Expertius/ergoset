@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "static.tildacdn.com",
       },
+      {
+        protocol: "https",
+        hostname: "e-station.tech",
+      },
     ],
   },
   async headers() {

@@ -182,8 +182,8 @@ export async function getLeadStats(params: { assignedToId?: string } = {}) {
 // ─── PUBLIC: AVAILABLE STATIONS ─────────────────────────
 
 export async function getPublicStations() {
-  const thirtyDaysOut = new Date();
-  thirtyDaysOut.setDate(thirtyDaysOut.getDate() + 30);
+  const soonCutoff = new Date();
+  soonCutoff.setDate(soonCutoff.getDate() + 60);
 
   const [available, soonAvailable] = await Promise.all([
     prisma.asset.findMany({
@@ -202,7 +202,7 @@ export async function getPublicStations() {
     }),
     prisma.rental.findMany({
       where: {
-        endDate: { lte: thirtyDaysOut, gte: new Date() },
+        endDate: { lte: soonCutoff, gte: new Date() },
         deal: { status: { in: ["active", "extended"] } },
       },
       select: {
