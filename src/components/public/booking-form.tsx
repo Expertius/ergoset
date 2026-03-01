@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Send, CheckCircle2, Loader2 } from "lucide-react";
+import { Send, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
 
 type BookingFormProps = {
   selectedStationId?: string;
@@ -85,181 +85,190 @@ export function BookingForm({ selectedStationId, selectedStationName }: BookingF
 
   if (submitted) {
     return (
-      <div className="text-center py-12">
-        <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-400 mb-4" />
-        <h3 className="text-2xl font-bold mb-2">Заявка отправлена!</h3>
-        <p className="text-zinc-400 max-w-md mx-auto">
-          Мы свяжемся с вами в ближайшее время для уточнения деталей и подбора идеальной конфигурации.
-        </p>
+      <div className="text-center py-16">
+        <div className="rounded-3xl glass-card inline-flex flex-col items-center p-12 max-w-md mx-auto">
+          <div className="rounded-full bg-emerald-500/10 p-4 mb-6">
+            <CheckCircle2 className="h-12 w-12 text-emerald-400" />
+          </div>
+          <h3 className="text-2xl font-bold mb-3">Заявка отправлена!</h3>
+          <p className="text-zinc-400 leading-relaxed">
+            Мы свяжемся с вами в ближайшее время для уточнения деталей и подбора идеальной конфигурации.
+          </p>
+        </div>
       </div>
     );
   }
 
+  const inputClass =
+    "w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-white placeholder-zinc-600 focus:border-blue-500/50 focus:bg-white/[0.05] focus:ring-1 focus:ring-blue-500/30 outline-none transition-all duration-200 text-sm";
+
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6">
-      {selectedStationName && (
-        <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 text-center">
-          <p className="text-sm text-blue-400">Выбранная станция</p>
-          <p className="font-semibold text-lg">{selectedStationName}</p>
-        </div>
-      )}
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1.5">Имя *</label>
-          <input
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
-            placeholder="Ваше имя"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1.5">Телефон *</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
-            placeholder="+7 (___) ___-__-__"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
-          placeholder="email@example.com"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-3">Меня интересует</label>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {INTEREST_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setInterest(opt.value)}
-              className={`rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
-                interest === opt.value
-                  ? "border-blue-500 bg-blue-500/10 text-blue-400"
-                  : "border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {interest !== "info" && (
-        <>
-          <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-3">Конфигурация мониторов</label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {CONFIG_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setConfig(opt.value)}
-                  className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
-                    config === opt.value
-                      ? "border-blue-500 bg-blue-500/10 text-blue-400"
-                      : "border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
+      <div className="rounded-3xl glass-card p-8 sm:p-10 space-y-6">
+        {selectedStationName && (
+          <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-4 text-center">
+            <p className="text-xs uppercase tracking-wider text-blue-400 mb-1">Выбранная станция</p>
+            <p className="font-semibold text-lg">{selectedStationName}</p>
           </div>
+        )}
 
-          {config === "custom" && (
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Опишите конфигурацию</label>
-              <textarea
-                value={customConfig}
-                onChange={(e) => setCustomConfig(e.target.value)}
-                rows={2}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors resize-none"
-                placeholder="Какие мониторы, размеры, дополнительное оборудование..."
-              />
-            </div>
-          )}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Имя *</label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputClass}
+              placeholder="Ваше имя"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Телефон *</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={inputClass}
+              placeholder="+7 (___) ___-__-__"
+            />
+          </div>
+        </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={inputClass}
+            placeholder="email@example.com"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-3">Меня интересует</label>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {INTEREST_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setInterest(opt.value)}
+                className={`rounded-xl border px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                  interest === opt.value
+                    ? "border-blue-500/50 bg-blue-500/10 text-blue-400 shadow-lg shadow-blue-500/5"
+                    : "border-white/[0.06] bg-white/[0.02] text-zinc-500 hover:border-white/10 hover:text-zinc-300"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {interest !== "info" && (
+          <>
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-                Желаемая дата начала
-              </label>
-              <input
-                type="date"
-                value={desiredStartDate}
-                onChange={(e) => setDesiredStartDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
-              />
+              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-3">Конфигурация мониторов</label>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {CONFIG_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setConfig(opt.value)}
+                    className={`rounded-xl border px-3 py-2.5 text-sm transition-all duration-200 ${
+                      config === opt.value
+                        ? "border-blue-500/50 bg-blue-500/10 text-blue-400"
+                        : "border-white/[0.06] bg-white/[0.02] text-zinc-500 hover:border-white/10 hover:text-zinc-300"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            {interest === "rent" || interest === "rent_to_purchase" ? (
+
+            {config === "custom" && (
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-                  Срок аренды (мес.)
-                </label>
-                <input
-                  type="number"
-                  min={2}
-                  max={36}
-                  value={desiredMonths}
-                  onChange={(e) => setDesiredMonths(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
-                  placeholder="Минимум 2 месяца"
+                <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Опишите конфигурацию</label>
+                <textarea
+                  value={customConfig}
+                  onChange={(e) => setCustomConfig(e.target.value)}
+                  rows={2}
+                  className={`${inputClass} resize-none`}
+                  placeholder="Какие мониторы, размеры, дополнительное оборудование..."
                 />
               </div>
-            ) : null}
-          </div>
-        </>
-      )}
+            )}
 
-      <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Комментарий</label>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={3}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors resize-none"
-          placeholder="Дополнительные пожелания, вопросы..."
-        />
-      </div>
-
-      {error && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-400">
-          {error}
-        </div>
-      )}
-
-      <button
-        type="submit"
-        disabled={loading || !name}
-        className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-      >
-        {loading ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : (
-          <Send className="h-5 w-5" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">
+                  Желаемая дата начала
+                </label>
+                <input
+                  type="date"
+                  value={desiredStartDate}
+                  onChange={(e) => setDesiredStartDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  className={inputClass}
+                />
+              </div>
+              {interest === "rent" || interest === "rent_to_purchase" ? (
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">
+                    Срок аренды (мес.)
+                  </label>
+                  <input
+                    type="number"
+                    min={2}
+                    max={36}
+                    value={desiredMonths}
+                    onChange={(e) => setDesiredMonths(e.target.value)}
+                    className={inputClass}
+                    placeholder="Минимум 2 месяца"
+                  />
+                </div>
+              ) : null}
+            </div>
+          </>
         )}
-        {loading ? "Отправка..." : "Отправить заявку"}
-      </button>
 
-      <p className="text-xs text-zinc-500 text-center">
-        Отправляя форму, вы соглашаетесь на обработку персональных данных
-      </p>
+        <div>
+          <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Комментарий</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+            className={`${inputClass} resize-none`}
+            placeholder="Дополнительные пожелания, вопросы..."
+          />
+        </div>
+
+        {error && (
+          <div className="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-4 text-sm text-red-400">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading || !name}
+          className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-6 py-4 text-base font-semibold text-white shadow-2xl shadow-blue-600/10 hover:shadow-blue-600/20 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <ArrowRight className="h-5 w-5" />
+          )}
+          {loading ? "Отправка..." : "Отправить заявку"}
+        </button>
+
+        <p className="text-xs text-zinc-600 text-center">
+          Отправляя форму, вы соглашаетесь на обработку персональных данных
+        </p>
+      </div>
     </form>
   );
 }

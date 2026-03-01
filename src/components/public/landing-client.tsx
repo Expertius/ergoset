@@ -20,6 +20,7 @@ import {
   Star,
   Quote,
   XCircle as XCircleIcon,
+  ArrowRight,
 } from "lucide-react";
 import { StationsSection } from "./stations-section";
 import { BookingForm } from "./booking-form";
@@ -29,16 +30,25 @@ const BENEFITS = [
     icon: Heart,
     title: "Идеальная анатомия",
     desc: "Анатомически правильная форма и умеренная жёсткость позволяют расслаблять мышцы спины. Забудьте о болях в спине и шее.",
+    gradient: "from-rose-500/20 to-orange-500/20",
+    iconColor: "text-rose-400",
+    iconBg: "bg-rose-500/10",
   },
   {
     icon: Zap,
     title: "Выше продуктивность",
     desc: "Полулёжа концентрация вырастает — эффект кокона позволяет работать большими слотами без усталости.",
+    gradient: "from-amber-500/20 to-yellow-500/20",
+    iconColor: "text-amber-400",
+    iconBg: "bg-amber-500/10",
   },
   {
     icon: Sparkles,
     title: "Новые ощущения",
     desc: "Получите опыт, который не имеет аналогов. Станция вызывает привыкание к хорошему — это тест-драйв будущего.",
+    gradient: "from-violet-500/20 to-blue-500/20",
+    iconColor: "text-violet-400",
+    iconBg: "bg-violet-500/10",
   },
 ];
 
@@ -74,16 +84,22 @@ const FEATURES = [
     icon: RotateCcw,
     title: "Меняйте положение",
     desc: "От обычного сидя до полностью горизонтального — когда вам это нужно.",
+    stat: "180°",
+    statLabel: "диапазон",
   },
   {
     icon: Eye,
     title: "Экран там где нужно",
     desc: "Всегда на одном расстоянии от глаз, что обеспечивает комфорт при любом положении.",
+    stat: "≡",
+    statLabel: "идеальная дистанция",
   },
   {
     icon: Monitor,
     title: "До 3 мониторов",
     desc: "Плюс дополнительный кронштейн для ноутбука, планшета или вертикального монитора.",
+    stat: "3+1",
+    statLabel: "экранов",
   },
 ];
 
@@ -95,6 +111,7 @@ const PRICING_RENT = [
     total: "24 000",
     note: "Минимальный срок аренды",
     highlight: false,
+    badge: null,
   },
   {
     period: "3 месяца",
@@ -102,7 +119,8 @@ const PRICING_RENT = [
     daily: "349",
     total: "31 410",
     note: "Экономия 15%",
-    highlight: true,
+    highlight: false,
+    badge: "Популярно",
   },
   {
     period: "3–6 мес.",
@@ -111,6 +129,7 @@ const PRICING_RENT = [
     total: "Помесячно",
     note: "Продление в этом периоде",
     highlight: false,
+    badge: null,
   },
   {
     period: "7+ мес.",
@@ -119,6 +138,7 @@ const PRICING_RENT = [
     total: "Помесячно",
     note: "Максимальная выгода",
     highlight: true,
+    badge: "Лучшая цена",
   },
 ];
 
@@ -162,6 +182,30 @@ const FAQ = [
   },
 ];
 
+const TESTIMONIALS = [
+  {
+    name: "Алексей",
+    role: "Разработчик",
+    text: "Работаю по 10 часов в день — спина больше не болит. За 2 месяца полностью привык и не хочу возвращаться на обычное кресло.",
+    stars: 5,
+    initials: "АЛ",
+  },
+  {
+    name: "Мария",
+    role: "Дизайнер",
+    text: "Сначала боялась, что будет непривычно. Через неделю поняла — это совершенно другой уровень комфорта. 3 монитора идеально встали.",
+    stars: 5,
+    initials: "МА",
+  },
+  {
+    name: "Дмитрий",
+    role: "Геймер",
+    text: "Взял на 2 месяца попробовать, сейчас на 8-м. Играть полулёжа — это нечто. Доставили и собрали за час, всё чётко.",
+    stars: 5,
+    initials: "ДМ",
+  },
+];
+
 export function LandingClient() {
   const [selectedStation, setSelectedStation] = useState<{ id: string; name: string } | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -169,65 +213,95 @@ export function LandingClient() {
   return (
     <>
       {/* ═══ HERO ═══ */}
-      <section className="relative overflow-hidden py-24 sm:py-32 lg:py-40">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-600/5 via-transparent to-transparent" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-3xl" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-4 py-1.5 text-sm text-blue-400 mb-8">
-            <Sparkles className="h-4 w-4" />
-            Тест-драйв будущего рабочего места
+      <section className="relative overflow-hidden min-h-[90vh] flex items-center">
+        {/* Background effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/8 rounded-full blur-[128px] animate-float" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-[128px] animate-float-delayed" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyan-600/5 rounded-full blur-[128px] animate-float-slow" />
+          <div className="absolute inset-0 grid-pattern" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 text-center w-full">
+          <div className="animate-slide-up">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/[0.06] px-5 py-2 text-sm text-blue-400 mb-8 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4" />
+              <span>Тест-драйв будущего рабочего места</span>
+            </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.1]">
-            Подписка на{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              киберстанции
-            </span>
+
+          <h1 className="animate-slide-up delay-100 text-5xl sm:text-6xl lg:text-8xl font-extrabold tracking-tight leading-[1.05]">
+            Подписка на
             <br />
-            e-station
+            <span className="text-gradient-blue">киберстанции</span>
+            <br />
+            <span className="text-zinc-500">e-station</span>
           </h1>
-          <p className="mt-6 text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+
+          <p className="animate-slide-up delay-200 mt-8 text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
             Эргономичные рабочие станции с полным циклом обслуживания.
             Работайте или играйте с максимальным комфортом{" "}
             <span className="text-white font-semibold">от 199 ₽/день</span>
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+
+          <div className="animate-slide-up delay-300 mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="#booking"
-              className="rounded-xl bg-blue-600 px-8 py-3.5 text-base font-semibold text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/20"
+              className="group relative rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 px-8 py-4 text-base font-semibold text-white shadow-2xl shadow-blue-600/20 hover:shadow-blue-600/30 hover:brightness-110 transition-all duration-300 flex items-center gap-2"
             >
               Забронировать станцию
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </a>
             <a
               href="#how-it-works"
-              className="rounded-xl border border-zinc-700 px-8 py-3.5 text-base font-medium text-zinc-300 hover:bg-zinc-800 transition-colors flex items-center gap-2"
+              className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-8 py-4 text-base font-medium text-zinc-300 hover:bg-white/[0.06] hover:border-white/20 transition-all duration-300 flex items-center gap-2"
             >
               Как это работает
               <ArrowDown className="h-4 w-4" />
             </a>
           </div>
+
+          {/* Stats row */}
+          <div className="animate-slide-up delay-400 mt-20 grid grid-cols-3 gap-8 max-w-lg mx-auto">
+            {[
+              { value: "199₽", label: "в день" },
+              { value: "24/7", label: "поддержка" },
+              { value: "1 час", label: "сборка" },
+            ].map((s) => (
+              <div key={s.label} className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">{s.value}</div>
+                <div className="text-xs sm:text-sm text-zinc-500 mt-1">{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ═══ BENEFITS ═══ */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">Почему киберстанция</h2>
-            <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
+      <section className="relative py-24 sm:py-32">
+        <div className="absolute inset-0 grid-pattern opacity-50" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <p className="text-sm font-semibold uppercase tracking-widest text-blue-400 mb-3">Преимущества</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Почему киберстанция</h2>
+            <p className="mt-5 text-zinc-400 max-w-xl mx-auto text-lg">
               Это не просто кресло — это полноценная рабочая станция, которая меняет подход к работе
             </p>
           </div>
-          <div className="grid gap-8 sm:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-3">
             {BENEFITS.map((b) => (
               <div
                 key={b.title}
-                className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8 hover:border-zinc-700 transition-colors"
+                className="group relative rounded-3xl glass-card p-8 hover:scale-[1.02] transition-all duration-300"
               >
-                <div className="rounded-xl bg-blue-500/10 p-3 w-fit mb-5">
-                  <b.icon className="h-6 w-6 text-blue-400" />
+                <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${b.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className="relative">
+                  <div className={`rounded-2xl ${b.iconBg} p-4 w-fit mb-6`}>
+                    <b.icon className={`h-7 w-7 ${b.iconColor}`} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">{b.title}</h3>
+                  <p className="text-zinc-400 leading-relaxed">{b.desc}</p>
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{b.title}</h3>
-                <p className="text-zinc-400 leading-relaxed">{b.desc}</p>
               </div>
             ))}
           </div>
@@ -235,23 +309,36 @@ export function LandingClient() {
       </section>
 
       {/* ═══ HOW IT WORKS ═══ */}
-      <section id="how-it-works" className="py-20 sm:py-28 bg-zinc-900/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">Как работает подписка</h2>
-            <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
+      <section id="how-it-works" className="relative py-24 sm:py-32 overflow-hidden">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[128px]" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <p className="text-sm font-semibold uppercase tracking-widest text-violet-400 mb-3">Процесс</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Как работает подписка</h2>
+            <p className="mt-5 text-zinc-400 max-w-xl mx-auto text-lg">
               Как каршеринг, только на эргономичное рабочее место. 4 простых шага.
             </p>
           </div>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((s) => (
-              <div key={s.num} className="relative">
-                <div className="text-5xl font-extrabold text-zinc-800 mb-4">{s.num}</div>
-                <div className="rounded-xl bg-blue-500/10 p-3 w-fit mb-4">
-                  <s.icon className="h-6 w-6 text-blue-400" />
+            {STEPS.map((s, i) => (
+              <div key={s.num} className="relative group">
+                {i < STEPS.length - 1 && (
+                  <div className="hidden lg:block absolute top-12 left-[calc(100%+1rem)] w-[calc(100%-2rem)] h-px">
+                    <div className="w-full h-px bg-gradient-to-r from-zinc-700 to-transparent" />
+                  </div>
+                )}
+                <div className="relative rounded-2xl glass-card p-6 hover:scale-[1.02] transition-all duration-300">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 text-white text-sm font-bold shrink-0">
+                      {s.num}
+                    </div>
+                    <div className="rounded-xl bg-white/[0.04] p-2.5">
+                      <s.icon className="h-5 w-5 text-zinc-400 group-hover:text-blue-400 transition-colors" />
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">{s.title}</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">{s.desc}</p>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{s.title}</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -259,43 +346,35 @@ export function LandingClient() {
       </section>
 
       {/* ═══ SOCIAL PROOF ═══ */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">Что говорят клиенты</h2>
-            <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
+      <section className="relative py-24 sm:py-32">
+        <div className="absolute inset-0 grid-pattern opacity-30" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <p className="text-sm font-semibold uppercase tracking-widest text-emerald-400 mb-3">Отзывы</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Что говорят клиенты</h2>
+            <p className="mt-5 text-zinc-400 max-w-xl mx-auto text-lg">
               Реальные отзывы людей, которые уже попробовали работать на киберстанции
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                name: "Алексей, разработчик",
-                text: "Работаю по 10 часов в день — спина больше не болит. За 2 месяца полностью привык и не хочу возвращаться на обычное кресло.",
-                stars: 5,
-              },
-              {
-                name: "Мария, дизайнер",
-                text: "Сначала боялась, что будет непривычно. Через неделю поняла — это совершенно другой уровень комфорта. 3 монитора идеально встали.",
-                stars: 5,
-              },
-              {
-                name: "Дмитрий, геймер",
-                text: "Взял на 2 месяца попробовать, сейчас на 8-м. Играть полулёжа — это нечто. Доставили и собрали за час, всё чётко.",
-                stars: 5,
-              },
-            ].map((t, i) => (
+            {TESTIMONIALS.map((t, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6"
+                className="group relative rounded-3xl glass-card p-8 hover:scale-[1.01] transition-all duration-300"
               >
-                <Quote className="h-8 w-8 text-blue-500/30 mb-4" />
-                <p className="text-zinc-300 leading-relaxed mb-4">{t.text}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-zinc-400">{t.name}</span>
-                  <div className="flex gap-0.5">
+                <Quote className="h-10 w-10 text-blue-500/10 mb-5" />
+                <p className="text-zinc-300 leading-relaxed mb-6 text-[15px]">{t.text}</p>
+                <div className="flex items-center gap-3 pt-5 border-t border-white/[0.06]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-violet-600 text-white text-xs font-bold">
+                    {t.initials}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm">{t.name}</div>
+                    <div className="text-xs text-zinc-500">{t.role}</div>
+                  </div>
+                  <div className="ml-auto flex gap-0.5">
                     {Array.from({ length: t.stars }).map((_, j) => (
-                      <Star key={j} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                      <Star key={j} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
                 </div>
@@ -306,16 +385,23 @@ export function LandingClient() {
       </section>
 
       {/* ═══ FEATURES ═══ */}
-      <section className="py-20 sm:py-28 bg-zinc-900/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="grid gap-8 sm:grid-cols-3">
+      <section className="relative py-24 sm:py-32 overflow-hidden">
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-violet-600/5 rounded-full blur-[128px]" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-sm font-semibold uppercase tracking-widest text-cyan-400 mb-3">Возможности</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Продумано до деталей</h2>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-3">
             {FEATURES.map((f) => (
-              <div key={f.title} className="text-center p-8">
-                <div className="rounded-xl bg-blue-500/10 p-3 w-fit mx-auto mb-5">
-                  <f.icon className="h-6 w-6 text-blue-400" />
+              <div key={f.title} className="group text-center rounded-3xl glass-card p-10 hover:scale-[1.02] transition-all duration-300">
+                <div className="text-4xl font-black text-gradient-blue mb-2">{f.stat}</div>
+                <div className="text-xs uppercase tracking-wider text-zinc-500 mb-6">{f.statLabel}</div>
+                <div className="rounded-2xl bg-white/[0.03] p-3 w-fit mx-auto mb-5">
+                  <f.icon className="h-6 w-6 text-zinc-400 group-hover:text-cyan-400 transition-colors" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">{f.desc}</p>
+                <p className="text-sm text-zinc-500 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -323,54 +409,44 @@ export function LandingClient() {
       </section>
 
       {/* ═══ DELIVERY ═══ */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="grid gap-12 lg:grid-cols-2 items-center">
+      <section className="relative py-24 sm:py-32">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-16 lg:grid-cols-2 items-center">
             <div>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+              <p className="text-sm font-semibold uppercase tracking-widest text-emerald-400 mb-3">Доставка</p>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-6 tracking-tight">
                 Бережная доставка на электромобиле
               </h2>
-              <p className="text-zinc-400 leading-relaxed mb-6">
+              <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
                 Собственная логистика на уникальном электромобиле KANGAROO ELECTRO.
                 Привозим, собираем, настраиваем — всё включено в один визит.
               </p>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-emerald-500/10 p-2 mt-0.5">
-                    <Leaf className="h-5 w-5 text-emerald-400" />
+              <div className="space-y-5">
+                {[
+                  { icon: Leaf, title: "Экологичная доставка", desc: "Электромобиль — тихо, чисто, без выхлопов", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+                  { icon: Shield, title: "Бережная транспортировка", desc: "Специально оборудованный кузов для перевозки станций", color: "text-blue-400", bg: "bg-blue-500/10" },
+                  { icon: Truck, title: "Сборка на месте", desc: "Установка, настройка и демонстрация всех функций", color: "text-violet-400", bg: "bg-violet-500/10" },
+                ].map((item) => (
+                  <div key={item.title} className="flex items-start gap-4">
+                    <div className={`rounded-xl ${item.bg} p-3 shrink-0`}>
+                      <item.icon className={`h-5 w-5 ${item.color}`} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-1">{item.title}</h4>
+                      <p className="text-sm text-zinc-500">{item.desc}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Экологичная доставка</h4>
-                    <p className="text-sm text-zinc-400">Электромобиль — тихо, чисто, без выхлопов</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-blue-500/10 p-2 mt-0.5">
-                    <Shield className="h-5 w-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Бережная транспортировка</h4>
-                    <p className="text-sm text-zinc-400">Специально оборудованный кузов для перевозки станций</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-purple-500/10 p-2 mt-0.5">
-                    <Truck className="h-5 w-5 text-purple-400" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Сборка на месте</h4>
-                    <p className="text-sm text-zinc-400">Установка, настройка и демонстрация всех функций</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-[4/3] rounded-2xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center">
-                <div className="text-center p-8">
-                  <Truck className="h-16 w-16 text-blue-500 mx-auto mb-4" />
-                  <p className="text-xl font-bold">KANGAROO ELECTRO</p>
-                  <p className="text-sm text-zinc-400 mt-2">Собственный электромобиль для доставки станций</p>
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-cyan-600/10 rounded-3xl blur-2xl" />
+              <div className="relative rounded-3xl glass-card p-12 flex flex-col items-center justify-center aspect-[4/3]">
+                <div className="rounded-3xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 p-8 mb-6">
+                  <Truck className="h-20 w-20 text-emerald-400" />
                 </div>
+                <p className="text-2xl font-bold">KANGAROO ELECTRO</p>
+                <p className="text-sm text-zinc-500 mt-2 text-center">Собственный электромобиль для бережной доставки станций</p>
               </div>
             </div>
           </div>
@@ -378,11 +454,13 @@ export function LandingClient() {
       </section>
 
       {/* ═══ CONFIGURATIONS ═══ */}
-      <section className="py-20 sm:py-28 bg-zinc-900/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <section className="relative py-24 sm:py-32 overflow-hidden">
+        <div className="absolute right-0 bottom-0 w-[500px] h-[500px] bg-violet-600/5 rounded-full blur-[128px]" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">Любая конфигурация под ваши задачи</h2>
-            <p className="mt-4 text-zinc-400 max-w-2xl mx-auto">
+            <p className="text-sm font-semibold uppercase tracking-widest text-violet-400 mb-3">Конфигурации</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Любая конфигурация под ваши задачи</h2>
+            <p className="mt-5 text-zinc-400 max-w-2xl mx-auto text-lg">
               Подберём идеальный комплект кронштейнов. При специфичных запросах можем привезти несколько
               вариантов и на месте выбрать самый удобный — бесплатно.
             </p>
@@ -398,18 +476,20 @@ export function LandingClient() {
             ].map((c, i) => (
               <div
                 key={i}
-                className={`rounded-xl border p-5 ${
+                className={`group relative rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] ${
                   c.popular
-                    ? "border-blue-500/50 bg-blue-500/5"
-                    : "border-zinc-800 bg-zinc-900/50"
+                    ? "glass-card gradient-border"
+                    : "glass-card"
                 }`}
               >
                 {c.popular && (
-                  <span className="text-xs font-medium text-blue-400 mb-2 block">Популярная</span>
+                  <span className="inline-flex items-center rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-xs font-medium text-blue-400 mb-3">
+                    Популярная
+                  </span>
                 )}
-                <h4 className="font-semibold text-lg">{c.monitors}</h4>
-                <p className="text-sm text-zinc-400 mt-1">{c.size}</p>
-                <p className="text-xs text-zinc-500 mt-2">{c.extra}</p>
+                <h4 className="font-bold text-lg">{c.monitors}</h4>
+                <p className="text-sm text-zinc-400 mt-1.5">{c.size}</p>
+                <p className="text-xs text-zinc-600 mt-2">{c.extra}</p>
               </div>
             ))}
           </div>
@@ -417,11 +497,13 @@ export function LandingClient() {
       </section>
 
       {/* ═══ STATIONS ═══ */}
-      <section id="stations" className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <section id="stations" className="relative py-24 sm:py-32">
+        <div className="absolute inset-0 grid-pattern opacity-30" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">Доступные станции</h2>
-            <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
+            <p className="text-sm font-semibold uppercase tracking-widest text-blue-400 mb-3">Каталог</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Доступные станции</h2>
+            <p className="mt-5 text-zinc-400 max-w-xl mx-auto text-lg">
               Актуальные данные в реальном времени. Выберите станцию и забронируйте прямо сейчас.
             </p>
           </div>
@@ -432,121 +514,121 @@ export function LandingClient() {
       </section>
 
       {/* ═══ PRICING ═══ */}
-      <section id="pricing" className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <section id="pricing" className="relative py-24 sm:py-32 overflow-hidden">
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[800px] h-[400px] bg-blue-600/5 rounded-full blur-[128px]" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">Стоимость аренды</h2>
-            <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
+            <p className="text-sm font-semibold uppercase tracking-widest text-amber-400 mb-3">Тарифы</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Стоимость аренды</h2>
+            <p className="mt-5 text-zinc-400 max-w-xl mx-auto text-lg">
               Чем дольше — тем выгоднее. Доставка и сборка оплачиваются разово.
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {PRICING_RENT.map((p) => (
               <div
                 key={p.period}
-                className={`rounded-2xl border p-6 relative ${
+                className={`group relative rounded-3xl p-7 transition-all duration-300 hover:scale-[1.02] ${
                   p.highlight
-                    ? "border-blue-500/50 bg-blue-500/5"
-                    : "border-zinc-800 bg-zinc-900/50"
+                    ? "glass-card gradient-border ring-1 ring-blue-500/20"
+                    : "glass-card"
                 }`}
               >
-                {p.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-0.5 text-xs font-medium text-white">
-                    Выгодно
+                {p.badge && (
+                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-semibold text-white whitespace-nowrap ${
+                    p.highlight
+                      ? "bg-gradient-to-r from-blue-600 to-violet-600 shadow-lg shadow-blue-600/20"
+                      : "bg-zinc-700"
+                  }`}>
+                    {p.badge}
                   </div>
                 )}
-                <div className="text-sm text-zinc-400 mb-1">{p.period}</div>
-                <div className="text-3xl font-bold mb-1">
-                  {p.price} <span className="text-lg font-normal text-zinc-400">₽/мес</span>
+                <div className="text-sm text-zinc-500 mb-2 font-medium">{p.period}</div>
+                <div className="text-3xl font-bold mb-0.5 tracking-tight">
+                  {p.price} <span className="text-base font-normal text-zinc-500">₽/мес</span>
                 </div>
-                <div className="text-lg font-semibold text-blue-400 mb-3">
+                <div className={`text-lg font-bold mb-4 ${p.highlight ? "text-gradient-blue" : "text-blue-400"}`}>
                   {p.daily} ₽/день
                 </div>
-                <div className="text-sm text-zinc-500">{p.total} ₽</div>
-                <div className="text-xs text-zinc-500 mt-1">{p.note}</div>
+                <div className="pt-4 border-t border-white/[0.06]">
+                  <div className="text-sm text-zinc-500">{p.total} ₽</div>
+                  <div className="text-xs text-zinc-600 mt-1">{p.note}</div>
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-12 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8">
-            <h3 className="text-xl font-bold mb-4">Стоимость покупки</h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
-              <div>
-                <div className="text-2xl font-bold">239 990 ₽</div>
-                <div className="text-zinc-400">Базовая станция</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">+ 15 000 ₽</div>
-                <div className="text-zinc-400">Замшевая обшивка</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">+ 15–55 тыс ₽</div>
-                <div className="text-zinc-400">Кронштейны и обвес</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-400">260–300 тыс ₽</div>
-                <div className="text-zinc-400">Полный комплект</div>
-              </div>
+          <div className="mt-14 rounded-3xl glass-card p-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-1 w-8 rounded-full bg-gradient-to-r from-blue-500 to-violet-500" />
+              <h3 className="text-xl font-bold">Стоимость покупки</h3>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+              {[
+                { val: "239 990 ₽", label: "Базовая станция", highlight: false },
+                { val: "+ 15 000 ₽", label: "Замшевая обшивка", highlight: false },
+                { val: "+ 15–55 тыс ₽", label: "Кронштейны и обвес", highlight: false },
+                { val: "260–300 тыс ₽", label: "Полный комплект", highlight: true },
+              ].map((item) => (
+                <div key={item.label}>
+                  <div className={`text-2xl font-bold ${item.highlight ? "text-gradient-blue" : "text-white"}`}>{item.val}</div>
+                  <div className="text-zinc-500 mt-1">{item.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* ═══ WHY RENT ═══ */}
-      <section className="py-20 sm:py-28 bg-zinc-900/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <section className="relative py-24 sm:py-32">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">Почему аренда — это выгодно</h2>
-            <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
+            <p className="text-sm font-semibold uppercase tracking-widest text-emerald-400 mb-3">Сравнение</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Почему аренда — это выгодно</h2>
+            <p className="mt-5 text-zinc-400 max-w-xl mx-auto text-lg">
               Тест-драйв вместо покупки вслепую. Убедитесь, что станция подходит именно вам.
             </p>
           </div>
-          <div className="grid gap-8 lg:grid-cols-2">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8">
-              <h3 className="text-xl font-bold mb-4 text-red-400">Покупка сразу</h3>
-              <ul className="space-y-3 text-sm text-zinc-400">
-                <li className="flex items-start gap-2">
-                  <XCircleIcon className="h-5 w-5 text-red-400/60 shrink-0 mt-0.5" />
-                  260 000 – 300 000 ₽ сразу
-                </li>
-                <li className="flex items-start gap-2">
-                  <XCircleIcon className="h-5 w-5 text-red-400/60 shrink-0 mt-0.5" />
-                  Не понятно, подойдёт ли именно вам
-                </li>
-                <li className="flex items-start gap-2">
-                  <XCircleIcon className="h-5 w-5 text-red-400/60 shrink-0 mt-0.5" />
-                  Самостоятельная доставка и сборка
-                </li>
-                <li className="flex items-start gap-2">
-                  <XCircleIcon className="h-5 w-5 text-red-400/60 shrink-0 mt-0.5" />
-                  Сложно продать если не подошло
-                </li>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-3xl glass-card p-8 sm:p-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-2 w-2 rounded-full bg-red-400" />
+                <h3 className="text-xl font-bold text-zinc-400">Покупка сразу</h3>
+              </div>
+              <ul className="space-y-4 text-sm text-zinc-500">
+                {[
+                  "260 000 – 300 000 ₽ сразу",
+                  "Не понятно, подойдёт ли именно вам",
+                  "Самостоятельная доставка и сборка",
+                  "Сложно продать если не подошло",
+                ].map((txt) => (
+                  <li key={txt} className="flex items-start gap-3">
+                    <XCircleIcon className="h-5 w-5 text-red-400/40 shrink-0 mt-0.5" />
+                    {txt}
+                  </li>
+                ))}
               </ul>
             </div>
-            <div className="rounded-2xl border border-blue-500/30 bg-blue-500/5 p-8">
-              <h3 className="text-xl font-bold mb-4 text-blue-400">Аренда в ERGOSET</h3>
-              <ul className="space-y-3 text-sm text-zinc-300">
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-                  От 12 000 ₽/мес — полноценный тест-драйв
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-                  Попробуете в деле на длительной дистанции
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-                  Доставка, сборка и настройка включены
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-                  Можно выкупить со скидкой или вернуть
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-                  Чем дольше — тем дешевле (от 199 ₽/день)
-                </li>
+            <div className="rounded-3xl glass-card gradient-border p-8 sm:p-10 ring-1 ring-blue-500/10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-2 w-2 rounded-full bg-emerald-400" />
+                <h3 className="text-xl font-bold">Аренда в ERGOSET</h3>
+              </div>
+              <ul className="space-y-4 text-sm text-zinc-300">
+                {[
+                  "От 12 000 ₽/мес — полноценный тест-драйв",
+                  "Попробуете в деле на длительной дистанции",
+                  "Доставка, сборка и настройка включены",
+                  "Можно выкупить со скидкой или вернуть",
+                  "Чем дольше — тем дешевле (от 199 ₽/день)",
+                ].map((txt) => (
+                  <li key={txt} className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                    {txt}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -554,19 +636,21 @@ export function LandingClient() {
       </section>
 
       {/* ═══ SPECS ═══ */}
-      <section id="specs" className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <section id="specs" className="relative py-24 sm:py-32">
+        <div className="absolute inset-0 grid-pattern opacity-30" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">Технические характеристики</h2>
+            <p className="text-sm font-semibold uppercase tracking-widest text-zinc-500 mb-3">Спецификации</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Технические характеристики</h2>
           </div>
-          <div className="max-w-2xl mx-auto rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+          <div className="max-w-2xl mx-auto rounded-3xl glass-card overflow-hidden">
             {SPECS.map((s, i) => (
               <div
                 key={s.label}
-                className={`flex justify-between px-6 py-4 ${i !== SPECS.length - 1 ? "border-b border-zinc-800" : ""}`}
+                className={`flex justify-between items-center px-8 py-5 ${i !== SPECS.length - 1 ? "border-b border-white/[0.04]" : ""} hover:bg-white/[0.02] transition-colors`}
               >
-                <span className="text-zinc-400">{s.label}</span>
-                <span className="font-medium text-right">{s.value}</span>
+                <span className="text-zinc-500 text-sm">{s.label}</span>
+                <span className="font-medium text-right text-sm">{s.value}</span>
               </div>
             ))}
           </div>
@@ -574,11 +658,16 @@ export function LandingClient() {
       </section>
 
       {/* ═══ BOOKING FORM ═══ */}
-      <section id="booking" className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold">Забронировать станцию</h2>
-            <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
+      <section id="booking" className="relative py-24 sm:py-32 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[128px]" />
+          <div className="absolute bottom-0 right-1/3 w-[400px] h-[400px] bg-violet-600/5 rounded-full blur-[128px]" />
+        </div>
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <p className="text-sm font-semibold uppercase tracking-widest text-blue-400 mb-3">Бронирование</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Забронировать станцию</h2>
+            <p className="mt-5 text-zinc-400 max-w-xl mx-auto text-lg">
               Оставьте заявку — мы свяжемся для уточнения деталей и подберём идеальную конфигурацию
             </p>
           </div>
@@ -590,31 +679,36 @@ export function LandingClient() {
       </section>
 
       {/* ═══ FAQ ═══ */}
-      <section id="faq" className="py-20 sm:py-28 bg-zinc-900/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <section id="faq" className="relative py-24 sm:py-32">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold">Частые вопросы</h2>
+            <p className="text-sm font-semibold uppercase tracking-widest text-zinc-500 mb-3">F.A.Q.</p>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Частые вопросы</h2>
           </div>
           <div className="max-w-2xl mx-auto space-y-3">
             {FAQ.map((item, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden"
+                className="rounded-2xl glass-card overflow-hidden transition-all duration-200"
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between px-6 py-4 text-left"
+                  className="w-full flex items-center justify-between px-6 py-5 text-left group"
                 >
-                  <span className="font-medium pr-4">{item.q}</span>
+                  <span className="font-medium pr-4 text-[15px] group-hover:text-white transition-colors">{item.q}</span>
                   <ChevronDown
-                    className={`h-5 w-5 text-zinc-400 shrink-0 transition-transform ${openFaq === i ? "rotate-180" : ""}`}
+                    className={`h-5 w-5 text-zinc-500 shrink-0 transition-all duration-300 ${openFaq === i ? "rotate-180 text-blue-400" : ""}`}
                   />
                 </button>
-                {openFaq === i && (
-                  <div className="px-6 pb-4 text-sm text-zinc-400 leading-relaxed">
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    openFaq === i ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="px-6 pb-5 text-sm text-zinc-400 leading-relaxed">
                     {item.a}
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>
@@ -622,27 +716,28 @@ export function LandingClient() {
       </section>
 
       {/* ═══ CTA ═══ */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Давайте пробовать?</h2>
-          <p className="text-zinc-400 mb-8 max-w-xl mx-auto">
+      <section className="relative py-24 sm:py-32 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-blue-600/10 to-violet-600/10 rounded-full blur-[128px]" />
+        </div>
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl sm:text-6xl font-bold mb-6 tracking-tight">Давайте пробовать?</h2>
+          <p className="text-zinc-400 mb-10 max-w-xl mx-auto text-lg">
             Убедитесь сами, что эргономичная станция — это то, что нужно для комфортной и продуктивной работы
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
             <a
               href="#booking"
-              className="rounded-xl bg-blue-600 px-8 py-3.5 text-base font-semibold text-white hover:bg-blue-500 transition-colors"
+              className="group rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 px-10 py-4 text-base font-semibold text-white shadow-2xl shadow-blue-600/20 hover:shadow-blue-600/30 hover:brightness-110 transition-all duration-300 flex items-center gap-2"
             >
               Забронировать станцию
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </a>
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <Check className="h-4 w-4 text-emerald-400" />
-              от 199 ₽/день
-              <Check className="h-4 w-4 text-emerald-400 ml-2" />
-              Доставка и сборка
-              <Check className="h-4 w-4 text-emerald-400 ml-2" />
-              Минимум 2 месяца
-            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-zinc-500">
+            <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-emerald-400" /> от 199 ₽/день</span>
+            <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-emerald-400" /> Доставка и сборка</span>
+            <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-emerald-400" /> Минимум 2 месяца</span>
           </div>
         </div>
       </section>
