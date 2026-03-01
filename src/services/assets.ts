@@ -5,6 +5,8 @@ import type { AssetCreateInput, AssetUpdateInput } from "@/domain/assets/validat
 export type AssetFilters = {
   search?: string;
   status?: AssetStatus;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 };
 
 export async function getAssets(filters?: AssetFilters) {
@@ -22,10 +24,14 @@ export async function getAssets(filters?: AssetFilters) {
     ];
   }
 
-  return prisma.asset.findMany({
-    where,
-    orderBy: { code: "asc" },
-  });
+  const sortField = filters?.sortBy || "code";
+  const sortDir = filters?.sortOrder || "asc";
+  const validFields = ["code", "name", "status", "retailPrice", "purchasePrice"];
+  const orderBy = validFields.includes(sortField)
+    ? { [sortField]: sortDir }
+    : { code: "asc" as const };
+
+  return prisma.asset.findMany({ where, orderBy });
 }
 
 export async function getAssetById(id: string) {

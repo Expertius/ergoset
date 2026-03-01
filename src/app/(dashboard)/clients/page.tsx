@@ -1,5 +1,6 @@
 import { getClients } from "@/services/clients";
 import { PageHeader } from "@/components/shared/page-header";
+import { SortableHeader } from "@/components/shared/sortable-header";
 import { Badge } from "@/components/ui/badge";
 import { formatPhone } from "@/lib/utils";
 import {
@@ -14,7 +15,12 @@ import Link from "next/link";
 import { ClientFiltersBar } from "@/components/clients/filters-bar";
 
 type Props = {
-  searchParams: Promise<{ search?: string; tag?: string }>;
+  searchParams: Promise<{
+    search?: string;
+    tag?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }>;
 };
 
 export default async function ClientsPage({ searchParams }: Props) {
@@ -22,6 +28,8 @@ export default async function ClientsPage({ searchParams }: Props) {
   const clients = await getClients({
     search: params.search,
     tag: params.tag,
+    sortBy: params.sortBy,
+    sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
   });
 
   return (
@@ -35,21 +43,22 @@ export default async function ClientsPage({ searchParams }: Props) {
 
       <ClientFiltersBar />
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ФИО</TableHead>
+              <SortableHeader column="fullName" label="ФИО" basePath="/clients" />
               <TableHead>Телефон</TableHead>
-              <TableHead>Email</TableHead>
+              <SortableHeader column="email" label="Email" basePath="/clients" />
               <TableHead>Теги</TableHead>
               <TableHead>Заметки</TableHead>
+              <SortableHeader column="createdAt" label="Создан" basePath="/clients" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {clients.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Клиенты не найдены
                 </TableCell>
               </TableRow>
@@ -81,6 +90,9 @@ export default async function ClientsPage({ searchParams }: Props) {
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
                   {client.notes || "—"}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                  {new Intl.DateTimeFormat("ru-RU").format(new Date(client.createdAt))}
                 </TableCell>
               </TableRow>
             ))}

@@ -9,11 +9,13 @@ import {
   getPeriodComparison,
   getTopAssetsByRevenue,
   getTopClientsByRevenue,
+  getDeliveryAssemblyCosts,
 } from "@/services/analytics";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { DEAL_STATUS_LABELS, DEAL_STATUS_COLORS } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { NotificationsPanel } from "@/components/notifications/notifications-panel";
+import { DeliveryCostToggle } from "@/components/dashboard/delivery-cost-toggle";
 import { KpiDeltaCard } from "@/components/dashboard/kpi-delta-card";
 import { RevenueTrendChart } from "@/components/dashboard/revenue-trend-chart";
 import { UtilizationChart } from "@/components/dashboard/utilization-chart";
@@ -26,13 +28,6 @@ import {
   Armchair,
   CalendarDays,
   Clock,
-  TrendingUp,
-  Wallet,
-  BarChart3,
-  Percent,
-  Receipt,
-  RefreshCw,
-  DollarSign,
   AlertTriangle,
 } from "lucide-react";
 
@@ -47,6 +42,7 @@ export default async function DashboardPage() {
     expensesByCategory,
     topAssets,
     topClients,
+    deliveryCosts,
   ] = await Promise.all([
     getDashboardStats(),
     getPeriodComparison(),
@@ -57,6 +53,7 @@ export default async function DashboardPage() {
     getExpensesByCategory(),
     getTopAssetsByRevenue(5),
     getTopClientsByRevenue(5),
+    getDeliveryAssemblyCosts(),
   ]);
 
   return (
@@ -112,66 +109,12 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* ─── Row 2: Financial KPIs with deltas ───────── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiDeltaCard
-          title="Доход (мес.)"
-          value={formatCurrency(comparison.revenue.current)}
-          delta={comparison.revenue.delta}
-          icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
-        />
-        <KpiDeltaCard
-          title="Расходы (мес.)"
-          value={formatCurrency(comparison.expenses.current)}
-          delta={comparison.expenses.delta}
-          icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
-          invertColor
-        />
-        <KpiDeltaCard
-          title="Прибыль (мес.)"
-          value={formatCurrency(comparison.profit.current)}
-          delta={comparison.profit.delta}
-          icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}
-        />
-        <KpiDeltaCard
-          title="Утилизация"
-          value={`${comparison.utilization.current}%`}
-          delta={comparison.utilization.delta}
-          deltaLabel="п.п. vs прошлый мес."
-          icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}
-        />
-      </div>
-
-      {/* ─── Row 3: Business KPIs ────────────────────── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiDeltaCard
-          title="Маржинальность"
-          value={`${kpis.margin}%`}
-          delta={comparison.margin.delta}
-          deltaLabel="п.п. vs прошлый мес."
-          icon={<Percent className="h-4 w-4 text-muted-foreground" />}
-        />
-        <KpiDeltaCard
-          title="Средний чек"
-          value={formatCurrency(kpis.avgCheck)}
-          delta={comparison.avgCheck.delta}
-          icon={<Receipt className="h-4 w-4 text-muted-foreground" />}
-        />
-        <KpiDeltaCard
-          title="Оборачиваемость капитала"
-          value={`${kpis.capitalTurnover}x`}
-          delta={comparison.deals.delta}
-          deltaLabel="сделки vs прошлый мес."
-          icon={<RefreshCw className="h-4 w-4 text-muted-foreground" />}
-        />
-        <KpiDeltaCard
-          title="Доход на станцию"
-          value={formatCurrency(kpis.revenuePerAsset)}
-          delta={comparison.revenue.delta}
-          deltaLabel="доход vs прошлый мес."
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-        />
-      </div>
+      {/* ─── Row 2–3: Financial KPIs with delivery toggle ─ */}
+      <DeliveryCostToggle
+        comparison={JSON.parse(JSON.stringify(comparison))}
+        kpis={JSON.parse(JSON.stringify(kpis))}
+        deliveryCosts={deliveryCosts}
+      />
 
       {/* ─── Row 4: Trend charts ─────────────────────── */}
       <div className="grid gap-6 md:grid-cols-2">

@@ -30,7 +30,7 @@ export function ClientFiltersBar() {
   }, [search, updateParams]);
 
   return (
-    <div className="flex gap-3">
+    <div className="flex flex-col sm:flex-row gap-3">
       <Input
         placeholder="Поиск по имени, телефону, email..."
         value={search}

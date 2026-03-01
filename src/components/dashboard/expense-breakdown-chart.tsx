@@ -21,14 +21,14 @@ interface Props {
 }
 
 const COLORS = [
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-5))",
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(340, 65%, 50%)",
-  "hsl(180, 60%, 45%)",
-  "hsl(60, 70%, 50%)",
+  "var(--chart-2)",
+  "var(--chart-5)",
+  "var(--chart-1)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "oklch(0.55 0.18 340)",
+  "oklch(0.55 0.12 195)",
+  "oklch(0.70 0.15 95)",
 ];
 
 function fmt(v: number) {

@@ -13,7 +13,7 @@ interface Props {
 }
 
 const config: ChartConfig = {
-  revenue: { label: "Выручка", color: "hsl(var(--chart-3))" },
+  revenue: { label: "Выручка", color: "var(--chart-3)" },
 };
 
 function fmt(v: number) {

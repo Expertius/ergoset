@@ -1,5 +1,6 @@
 import { getDocuments } from "@/services/documents";
 import { PageHeader } from "@/components/shared/page-header";
+import { SortableHeader } from "@/components/shared/sortable-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   DOCUMENT_TYPE_LABELS,
@@ -16,9 +17,26 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
+import { DocumentFiltersBar } from "@/components/documents/filters-bar";
+import type { DocumentType, DocumentStatus } from "@/generated/prisma/browser";
 
-export default async function DocumentsPage() {
-  const documents = await getDocuments();
+type Props = {
+  searchParams: Promise<{
+    type?: string;
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }>;
+};
+
+export default async function DocumentsPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const documents = await getDocuments({
+    type: params.type as DocumentType | undefined,
+    status: params.status as DocumentStatus | undefined,
+    sortBy: params.sortBy,
+    sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
+  });
 
   return (
     <div className="space-y-4">
@@ -27,15 +45,17 @@ export default async function DocumentsPage() {
         description={`Всего: ${documents.length}`}
       />
 
-      <div className="rounded-md border">
+      <DocumentFiltersBar />
+
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Клиент</TableHead>
-              <TableHead>Тип</TableHead>
+              <SortableHeader column="type" label="Тип" basePath="/documents" />
               <TableHead>Станция</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead>Дата</TableHead>
+              <SortableHeader column="status" label="Статус" basePath="/documents" />
+              <SortableHeader column="createdAt" label="Дата" basePath="/documents" />
               <TableHead>Файл</TableHead>
             </TableRow>
           </TableHeader>

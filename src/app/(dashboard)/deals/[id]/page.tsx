@@ -10,6 +10,9 @@ import {
   PAYMENT_KIND_LABELS,
   PAYMENT_STATUS_LABELS,
   PAYMENT_STATUS_COLORS,
+  DOCUMENT_TYPE_LABELS,
+  DOCUMENT_STATUS_LABELS,
+  DOCUMENT_STATUS_COLORS,
 } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +52,23 @@ export default async function DealDetailPage({ params }: Props) {
           </span>
         )}
       </div>
+
+      {deal.parentDeal && (
+        <Card className="border-l-4 border-l-blue-400">
+          <CardContent className="py-3 px-4">
+            <p className="text-sm">
+              <span className="text-muted-foreground">Продление сделки: </span>
+              <Link href={`/deals/${deal.parentDeal.id}`} className="font-medium hover:underline">
+                {deal.parentDeal.client.fullName}
+              </Link>
+              <StatusBadge
+                label={DEAL_STATUS_LABELS[deal.parentDeal.status]}
+                colorClass={`${DEAL_STATUS_COLORS[deal.parentDeal.status]} ml-2`}
+              />
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         <DealActions
@@ -193,6 +213,38 @@ export default async function DealDetailPage({ params }: Props) {
         </Card>
       )}
 
+      {/* Extension deals */}
+      {deal.childDeals.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Продления</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {deal.childDeals.map((child) => (
+                <div key={child.id} className="flex items-center justify-between border-b pb-2 last:border-0 text-sm">
+                  <div>
+                    <Link href={`/deals/${child.id}`} className="font-medium hover:underline">
+                      Сделка-продление
+                    </Link>
+                    <p className="text-muted-foreground text-xs">
+                      {formatDate(child.createdAt)}
+                    </p>
+                    {child.comment && (
+                      <p className="text-muted-foreground text-xs">{child.comment}</p>
+                    )}
+                  </div>
+                  <StatusBadge
+                    label={DEAL_STATUS_LABELS[child.status]}
+                    colorClass={DEAL_STATUS_COLORS[child.status]}
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Accessories */}
       {rental && rental.accessories.length > 0 && (
         <Card>
@@ -299,8 +351,24 @@ export default async function DealDetailPage({ params }: Props) {
             <div className="space-y-2">
               {deal.documents.map((d) => (
                 <div key={d.id} className="flex items-center justify-between text-sm border-b pb-2 last:border-0">
-                  <span>{d.type}</span>
-                  <span className="text-muted-foreground">{formatDate(d.createdAt)}</span>
+                  <div>
+                    <span className="font-medium">{DOCUMENT_TYPE_LABELS[d.type]}</span>
+                    <p className="text-muted-foreground text-xs">{formatDate(d.createdAt)}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge
+                      label={DOCUMENT_STATUS_LABELS[d.status]}
+                      colorClass={DOCUMENT_STATUS_COLORS[d.status]}
+                    />
+                    {d.filePath && (
+                      <a
+                        href={`/api/documents/${d.id}/download`}
+                        className="text-xs text-blue-600 hover:underline whitespace-nowrap"
+                      >
+                        Скачать
+                      </a>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

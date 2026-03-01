@@ -5,6 +5,8 @@ import type { AccessoryCreateInput, AccessoryUpdateInput } from "@/domain/access
 export type AccessoryFilters = {
   search?: string;
   category?: AccessoryCategory;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 };
 
 export async function getAccessories(filters?: AccessoryFilters) {
@@ -21,12 +23,17 @@ export async function getAccessories(filters?: AccessoryFilters) {
     ];
   }
 
+  const sortField = filters?.sortBy || "name";
+  const sortDir = filters?.sortOrder || "asc";
+  const validFields = ["name", "sku", "category", "retailPrice"];
+  const orderBy = validFields.includes(sortField)
+    ? { [sortField]: sortDir }
+    : { name: "asc" as const };
+
   return prisma.accessory.findMany({
     where,
-    include: {
-      inventoryItems: true,
-    },
-    orderBy: { name: "asc" },
+    include: { inventoryItems: true },
+    orderBy,
   });
 }
 

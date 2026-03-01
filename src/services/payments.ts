@@ -12,6 +12,8 @@ export type PaymentFilters = {
   status?: PaymentStatus;
   kind?: PaymentKind;
   dealId?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 };
 
 export async function getPayments(filters?: PaymentFilters) {
@@ -28,13 +30,20 @@ export async function getPayments(filters?: PaymentFilters) {
     };
   }
 
+  const sortField = filters?.sortBy || "date";
+  const sortDir = filters?.sortOrder || "desc";
+  const validFields = ["date", "amount", "status", "kind"];
+  const orderBy = validFields.includes(sortField)
+    ? { [sortField]: sortDir }
+    : { date: "desc" as const };
+
   return prisma.payment.findMany({
     where,
     include: {
       deal: { include: { client: true } },
       rental: { include: { asset: true } },
     },
-    orderBy: { date: "desc" },
+    orderBy,
     take: 200,
   });
 }

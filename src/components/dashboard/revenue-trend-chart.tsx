@@ -21,9 +21,9 @@ interface Props {
 }
 
 const config: ChartConfig = {
-  revenue: { label: "Доход", color: "hsl(var(--chart-1))" },
-  expenses: { label: "Расходы", color: "hsl(var(--chart-2))" },
-  profit: { label: "Прибыль", color: "hsl(var(--chart-3))" },
+  revenue: { label: "Доход", color: "var(--chart-1)" },
+  expenses: { label: "Расходы", color: "var(--chart-2)" },
+  profit: { label: "Прибыль", color: "var(--chart-3)" },
 };
 
 function fmt(v: number) {

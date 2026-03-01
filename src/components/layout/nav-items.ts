@@ -10,6 +10,7 @@ import {
   BarChart3,
   Upload,
   Settings,
+  Truck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,6 +39,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { title: "Сделки", href: "/deals", icon: FileText },
       { title: "Клиенты", href: "/clients", icon: Users },
+      { title: "Логистика", href: "/logistics", icon: Truck },
     ],
   },
   {

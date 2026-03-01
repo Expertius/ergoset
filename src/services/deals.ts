@@ -9,6 +9,8 @@ export type DealFilters = {
   search?: string;
   status?: DealStatus;
   type?: DealType;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 };
 
 const BLOCKING_STATUSES: DealStatus[] = [
@@ -32,6 +34,13 @@ export async function getDeals(filters?: DealFilters) {
     };
   }
 
+  const sortField = filters?.sortBy || "createdAt";
+  const sortDir = filters?.sortOrder || "desc";
+  const validFields = ["createdAt", "status", "type"];
+  const orderBy = validFields.includes(sortField)
+    ? { [sortField]: sortDir }
+    : { createdAt: "desc" as const };
+
   return prisma.deal.findMany({
     where,
     include: {
@@ -39,7 +48,7 @@ export async function getDeals(filters?: DealFilters) {
       rentals: { include: { asset: true } },
       _count: { select: { payments: true } },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy,
     take: 100,
   });
 }
@@ -49,6 +58,11 @@ export async function getDealById(id: string) {
     where: { id },
     include: {
       client: true,
+      parentDeal: { include: { client: true } },
+      childDeals: {
+        include: { client: true, rentals: { include: { asset: true } } },
+        orderBy: { createdAt: "asc" },
+      },
       rentals: {
         include: {
           asset: true,
@@ -227,6 +241,17 @@ export async function extendRental(data: RentalExtendInput) {
     (data.amountRent || 0) + (data.amountDelivery || 0) - (data.amountDiscount || 0);
 
   return prisma.$transaction(async (tx) => {
+    const extensionDeal = await tx.deal.create({
+      data: {
+        type: rental.deal.type,
+        status: "active",
+        clientId: rental.deal.clientId,
+        parentDealId: rental.dealId,
+        source: rental.deal.source,
+        comment: data.comment,
+      },
+    });
+
     await tx.rentalPeriod.create({
       data: {
         rentalId: rental.id,
@@ -256,7 +281,7 @@ export async function extendRental(data: RentalExtendInput) {
       data: { status: "extended" },
     });
 
-    return rental;
+    return extensionDeal;
   });
 }
 

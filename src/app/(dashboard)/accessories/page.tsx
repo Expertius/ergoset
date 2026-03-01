@@ -1,5 +1,6 @@
 import { getAccessories } from "@/services/accessories";
 import { PageHeader } from "@/components/shared/page-header";
+import { SortableHeader } from "@/components/shared/sortable-header";
 import { ACCESSORY_CATEGORY_LABELS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -16,7 +17,12 @@ import type { AccessoryCategory } from "@/generated/prisma/browser";
 import { AccessoryFiltersBar } from "@/components/accessories/filters-bar";
 
 type Props = {
-  searchParams: Promise<{ search?: string; category?: string }>;
+  searchParams: Promise<{
+    search?: string;
+    category?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }>;
 };
 
 export default async function AccessoriesPage({ searchParams }: Props) {
@@ -24,6 +30,8 @@ export default async function AccessoriesPage({ searchParams }: Props) {
   const accessories = await getAccessories({
     search: params.search,
     category: params.category as AccessoryCategory | undefined,
+    sortBy: params.sortBy,
+    sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
   });
 
   return (
@@ -37,17 +45,17 @@ export default async function AccessoriesPage({ searchParams }: Props) {
 
       <AccessoryFiltersBar />
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-32">SKU</TableHead>
-              <TableHead>Название</TableHead>
-              <TableHead>Категория</TableHead>
+              <SortableHeader column="sku" label="SKU" basePath="/accessories" className="w-32" />
+              <SortableHeader column="name" label="Название" basePath="/accessories" />
+              <SortableHeader column="category" label="Категория" basePath="/accessories" />
               <TableHead className="text-center">На складе</TableHead>
               <TableHead className="text-center">Зарезерв.</TableHead>
               <TableHead className="text-center">Доступно</TableHead>
-              <TableHead className="text-right">Розница</TableHead>
+              <SortableHeader column="retailPrice" label="Розница" basePath="/accessories" className="text-right" />
             </TableRow>
           </TableHeader>
           <TableBody>

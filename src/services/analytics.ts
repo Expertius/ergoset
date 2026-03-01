@@ -156,6 +156,35 @@ export async function getFinancialKPIs(period?: { from: Date; to: Date }) {
   };
 }
 
+// ─── Financial KPIs excluding delivery/assembly ─────────
+
+export async function getDeliveryAssemblyCosts(period?: { from: Date; to: Date }) {
+  const dateFilter = period ? { date: { gte: period.from, lte: period.to } } : {};
+
+  const [deliveryExpenses, deliveryPayments] = await Promise.all([
+    prisma.expense.aggregate({
+      where: {
+        category: { in: ["delivery_cost", "assembly_cost"] },
+        ...dateFilter,
+      },
+      _sum: { amount: true },
+    }),
+    prisma.payment.aggregate({
+      where: {
+        status: "paid",
+        kind: { in: ["delivery", "assembly"] },
+        ...dateFilter,
+      },
+      _sum: { amount: true },
+    }),
+  ]);
+
+  return {
+    expenses: deliveryExpenses._sum.amount ?? 0,
+    income: deliveryPayments._sum.amount ?? 0,
+  };
+}
+
 // ─── Period comparison (current month vs previous) ──────
 
 export async function getPeriodComparison() {

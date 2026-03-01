@@ -56,6 +56,7 @@ export async function extendRentalAction(formData: FormData): Promise<ActionResu
     amountRent: raw.amountRent ? Number(raw.amountRent) : 0,
     amountDelivery: raw.amountDelivery ? Number(raw.amountDelivery) : 0,
     amountDiscount: raw.amountDiscount ? Number(raw.amountDiscount) : 0,
+    plannedMonths: raw.plannedMonths ? Number(raw.plannedMonths) : undefined,
   });
 
   if (!parsed.success) {
@@ -63,12 +64,16 @@ export async function extendRentalAction(formData: FormData): Promise<ActionResu
   }
 
   try {
-    await dealService.extendRental(parsed.data);
-    await logAudit("rental", parsed.data.rentalId, "extend", { newEndDate: parsed.data.newEndDate.toISOString() });
+    const extensionDeal = await dealService.extendRental(parsed.data);
+    await logAudit("deal", extensionDeal.id, "extend", {
+      parentDealId: extensionDeal.parentDealId,
+      rentalId: parsed.data.rentalId,
+      newEndDate: parsed.data.newEndDate.toISOString(),
+    });
     revalidatePath("/deals");
     revalidatePath("/calendar");
     revalidatePath("/");
-    return { success: true };
+    return { success: true, id: extensionDeal.id };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка продления";
     return { success: false, error: msg };

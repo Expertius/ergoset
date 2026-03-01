@@ -153,8 +153,9 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  createdDeals  Deal[]     @relation("DealCreatedBy")
-  auditLogs     AuditLog[]
+  createdDeals      Deal[]             @relation("DealCreatedBy")
+  auditLogs         AuditLog[]
+  deliveryComments  DeliveryComment[]
 
   @@map("users")
 }
@@ -273,6 +274,7 @@ model Client {
   registrationAddress  String?
   actualAddress        String?
   notes                String?
+  deliveryNotes        String?
   tags                 String[]
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
@@ -283,22 +285,25 @@ model Client {
 }
 
 model Deal {
-  id          String     @id @default(cuid())
-  type        DealType
-  status      DealStatus @default(lead)
-  clientId    String
-  createdById String?
-  source      String?
-  comment     String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id           String     @id @default(cuid())
+  type         DealType
+  status       DealStatus @default(lead)
+  clientId     String
+  createdById  String?
+  parentDealId String?
+  source       String?
+  comment      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
-  client    Client    @relation(fields: [clientId], references: [id])
-  createdBy User?     @relation("DealCreatedBy", fields: [createdById], references: [id])
-  rentals   Rental[]
-  payments  Payment[]
-  expenses  Expense[]
-  documents Document[]
+  client     Client    @relation(fields: [clientId], references: [id])
+  createdBy  User?     @relation("DealCreatedBy", fields: [createdById], references: [id])
+  parentDeal Deal?     @relation("DealExtensions", fields: [parentDealId], references: [id])
+  childDeals Deal[]    @relation("DealExtensions")
+  rentals    Rental[]
+  payments   Payment[]
+  expenses   Expense[]
+  documents  Document[]
 
   @@map("deals")
 }
@@ -377,21 +382,90 @@ model RentalAccessoryLine {
 }
 
 model DeliveryTask {
-  id          String             @id @default(cuid())
-  rentalId    String
-  type        DeliveryTaskType
-  plannedAt   DateTime?
-  status      DeliveryTaskStatus @default(planned)
-  assignee    String?
-  address     String?
-  instructions String?
-  comment     String?
+  id            String             @id @default(cuid())
+  rentalId      String
+  type          DeliveryTaskType
+  plannedAt     DateTime?
+  status        DeliveryTaskStatus @default(planned)
+  assignee      String?
+  address       String?
+  instructions  String?
+  comment       String?
+
+  // Route
+  pointFrom        String?
+  pointFromLat     Float?
+  pointFromLng     Float?
+  pointTo          String?
+  pointToLat       Float?
+  pointToLng       Float?
+  distanceKm       Float?
+  driveDurationMin Int?
+
+  // Timing breakdown (minutes)
+  timeLoading      Int?
+  timeDriving      Int?
+  timeCarrying     Int?
+  timeAssembly     Int?
+  timeDisassembly  Int?
+  timeUnloading    Int?
+  totalTimeMin     Int?
+
+  startedAt        DateTime?
+  completedAt      DateTime?
+
+  // Costs (kopecks)
+  fuelCost         Int?
+  tollCost         Int?
+  otherCost        Int?
+  totalCost        Int?
+
+  // Salary (kopecks)
+  salaryBase       Int?
+  salaryPerKm      Int?
+  salaryTotal      Int?
+
+  // Logistics notes
+  logistComment    String?
+  clientNote       String?
+  floor            Int?
+  hasElevator      Boolean?
+
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
 
-  rental  Rental  @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  rental    Rental             @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  comments  DeliveryComment[]
+  expenses  Expense[]
 
   @@map("delivery_tasks")
+}
+
+model DeliveryComment {
+  id             String   @id @default(cuid())
+  deliveryTaskId String
+  authorId       String?
+  text           String
+  createdAt      DateTime @default(now())
+
+  deliveryTask DeliveryTask @relation(fields: [deliveryTaskId], references: [id], onDelete: Cascade)
+  author       User?        @relation(fields: [authorId], references: [id])
+
+  @@map("delivery_comments")
+}
+
+model DeliveryRate {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  baseSalary      Int      @default(0)
+  perKmRate       Int      @default(0)
+  fuelPerKmRate   Int      @default(0)
+  assemblyRate    Int      @default(0)
+  disassemblyRate Int      @default(0)
+  floorRate       Int      @default(0)
+  updatedAt       DateTime @updatedAt
+
+  @@map("delivery_rates")
 }
 
 model Payment {
@@ -416,18 +490,20 @@ model Payment {
 }
 
 model Expense {
-  id         String          @id @default(cuid())
-  category   ExpenseCategory
-  assetId    String?
-  dealId     String?
-  rentalId   String?
-  date       DateTime
-  amount     Int
-  comment    String?
-  createdAt  DateTime        @default(now())
+  id              String          @id @default(cuid())
+  category        ExpenseCategory
+  assetId         String?
+  dealId          String?
+  rentalId        String?
+  deliveryTaskId  String?
+  date            DateTime
+  amount          Int
+  comment         String?
+  createdAt       DateTime        @default(now())
 
-  asset  Asset? @relation(fields: [assetId], references: [id])
-  deal   Deal?  @relation(fields: [dealId], references: [id])
+  asset        Asset?        @relation(fields: [assetId], references: [id])
+  deal         Deal?         @relation(fields: [dealId], references: [id])
+  deliveryTask DeliveryTask? @relation(fields: [deliveryTaskId], references: [id])
 
   @@map("expenses")
 }

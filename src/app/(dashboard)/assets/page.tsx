@@ -1,5 +1,6 @@
 import { getAssets } from "@/services/assets";
 import { PageHeader } from "@/components/shared/page-header";
+import { SortableHeader } from "@/components/shared/sortable-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ASSET_STATUS_LABELS, ASSET_STATUS_COLORS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
@@ -16,7 +17,12 @@ import type { AssetStatus } from "@/generated/prisma/browser";
 import { AssetFiltersBar } from "@/components/assets/filters-bar";
 
 type Props = {
-  searchParams: Promise<{ search?: string; status?: string }>;
+  searchParams: Promise<{
+    search?: string;
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }>;
 };
 
 export default async function AssetsPage({ searchParams }: Props) {
@@ -24,6 +30,8 @@ export default async function AssetsPage({ searchParams }: Props) {
   const assets = await getAssets({
     search: params.search,
     status: params.status as AssetStatus | undefined,
+    sortBy: params.sortBy,
+    sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
   });
 
   return (
@@ -37,16 +45,16 @@ export default async function AssetsPage({ searchParams }: Props) {
 
       <AssetFiltersBar />
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-32">Код</TableHead>
-              <TableHead>Название</TableHead>
+              <SortableHeader column="code" label="Код" basePath="/assets" className="w-32" />
+              <SortableHeader column="name" label="Название" basePath="/assets" />
               <TableHead>Цвет</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead className="text-right">Розница</TableHead>
-              <TableHead className="text-right">Закупка</TableHead>
+              <SortableHeader column="status" label="Статус" basePath="/assets" />
+              <SortableHeader column="retailPrice" label="Розница" basePath="/assets" className="text-right" />
+              <SortableHeader column="purchasePrice" label="Закупка" basePath="/assets" className="text-right" />
             </TableRow>
           </TableHeader>
           <TableBody>

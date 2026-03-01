@@ -49,7 +49,7 @@ export function AccessoryFiltersBar() {
         defaultValue={searchParams.get("category") || "all"}
         onValueChange={(val) => updateParams("category", val)}
       >
-        <SelectTrigger className="w-48">
+        <SelectTrigger className="w-full sm:w-48">
           <SelectValue placeholder="Все категории" />
         </SelectTrigger>
         <SelectContent>

@@ -19,7 +19,7 @@ interface Props {
 }
 
 const config: ChartConfig = {
-  utilization: { label: "Утилизация %", color: "hsl(var(--chart-4))" },
+  utilization: { label: "Утилизация %", color: "var(--chart-4)" },
 };
 
 export function UtilizationChart({ data }: Props) {

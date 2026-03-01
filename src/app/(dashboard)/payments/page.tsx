@@ -1,5 +1,6 @@
 import { getPayments, getExpenses, getFinanceSummary } from "@/services/payments";
 import { PageHeader } from "@/components/shared/page-header";
+import { SortableHeader } from "@/components/shared/sortable-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   PAYMENT_KIND_LABELS,
@@ -21,10 +22,29 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { PaymentFiltersBar } from "@/components/payments/filters-bar";
+import type { PaymentStatus, PaymentKind } from "@/generated/prisma/browser";
 
-export default async function PaymentsPage() {
+type Props = {
+  searchParams: Promise<{
+    search?: string;
+    status?: string;
+    kind?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }>;
+};
+
+export default async function PaymentsPage({ searchParams }: Props) {
+  const params = await searchParams;
   const [payments, expenses, summary] = await Promise.all([
-    getPayments(),
+    getPayments({
+      search: params.search,
+      status: params.status as PaymentStatus | undefined,
+      kind: params.kind as PaymentKind | undefined,
+      sortBy: params.sortBy,
+      sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
+    }),
     getExpenses(),
     getFinanceSummary(),
   ]);
@@ -69,16 +89,17 @@ export default async function PaymentsPage() {
         </TabsList>
 
         <TabsContent value="payments">
-          <div className="rounded-md border">
+          <PaymentFiltersBar />
+          <div className="rounded-md border mt-3 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Клиент</TableHead>
-                  <TableHead>Тип</TableHead>
+                  <SortableHeader column="kind" label="Тип" basePath="/payments" />
                   <TableHead>Способ</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead>Дата</TableHead>
-                  <TableHead className="text-right">Сумма</TableHead>
+                  <SortableHeader column="status" label="Статус" basePath="/payments" />
+                  <SortableHeader column="date" label="Дата" basePath="/payments" />
+                  <SortableHeader column="amount" label="Сумма" basePath="/payments" className="text-right" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -126,7 +147,7 @@ export default async function PaymentsPage() {
               + Расход
             </Link>
           </div>
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

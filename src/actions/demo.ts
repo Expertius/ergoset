@@ -2,6 +2,9 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { generateDocument } from "@/services/documents";
+import type { DocumentType, DocumentStatus } from "@/generated/prisma/browser";
+import * as fs from "fs";
 
 export async function getDemoStatus() {
   const count = await prisma.deal.count({ where: { source: "demo" } });
@@ -135,6 +138,11 @@ export async function seedDemoData() {
         { kind: "delivery" as const, amount: 500000, status: "paid" as const, date: new Date("2026-02-01") },
         { kind: "deposit" as const, amount: 1000000, status: "paid" as const, date: new Date("2026-02-01") },
       ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "transfer_act" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "equipment_appendix" as DocumentType, status: "generated" as DocumentStatus },
+      ],
     },
     {
       client: "Горячкина Анна Сергеевна",
@@ -166,6 +174,11 @@ export async function seedDemoData() {
         { kind: "rent" as const, amount: 3000000, status: "paid" as const, date: new Date("2026-01-15") },
         { kind: "rent" as const, amount: 3000000, status: "paid" as const, date: new Date("2026-02-15") },
         { kind: "deposit" as const, amount: 1500000, status: "paid" as const, date: new Date("2025-12-15") },
+      ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "transfer_act" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "equipment_appendix" as DocumentType, status: "generated" as DocumentStatus },
       ],
     },
     {
@@ -204,6 +217,11 @@ export async function seedDemoData() {
         { kind: "rent" as const, amount: 2500000, status: "paid" as const, date: new Date("2026-01-20") },
         { kind: "delivery" as const, amount: 800000, status: "paid" as const, date: new Date("2026-01-20") },
       ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "transfer_act" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "equipment_appendix" as DocumentType, status: "generated" as DocumentStatus },
+      ],
     },
     {
       client: "Артур",
@@ -233,6 +251,10 @@ export async function seedDemoData() {
       payments: [
         { kind: "rent" as const, amount: 2800000, status: "planned" as const, date: new Date("2026-03-05") },
         { kind: "delivery" as const, amount: 500000, status: "planned" as const, date: new Date("2026-03-05") },
+      ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "generated" as DocumentStatus },
+        { type: "equipment_appendix" as DocumentType, status: "draft" as DocumentStatus },
       ],
     },
     {
@@ -274,6 +296,11 @@ export async function seedDemoData() {
         { kind: "rent" as const, amount: 2200000, status: "paid" as const, date: new Date("2026-02-01") },
         { kind: "deposit" as const, amount: 1000000, status: "paid" as const, date: new Date("2025-11-01") },
       ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "transfer_act" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "return_act" as DocumentType, status: "draft" as DocumentStatus },
+      ],
     },
     {
       client: "Ларкин Александр",
@@ -304,6 +331,11 @@ export async function seedDemoData() {
       payments: [
         { kind: "rent" as const, amount: 2300000, status: "paid" as const, date: new Date("2026-01-10") },
         { kind: "rent" as const, amount: 2300000, status: "paid" as const, date: new Date("2026-02-10") },
+      ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "transfer_act" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "equipment_appendix" as DocumentType, status: "generated" as DocumentStatus },
       ],
     },
     {
@@ -339,6 +371,11 @@ export async function seedDemoData() {
         { kind: "rent" as const, amount: 2000000, status: "paid" as const, date: new Date("2026-01-01") },
         { kind: "sale" as const, amount: 20000000, status: "paid" as const, date: new Date("2026-02-01") },
       ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "transfer_act" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "buyout_doc" as DocumentType, status: "signed" as DocumentStatus },
+      ],
     },
     {
       client: "Козлов Дмитрий Игоревич",
@@ -359,6 +396,9 @@ export async function seedDemoData() {
       deliveryTasks: [],
       payments: [
         { kind: "deposit" as const, amount: 1000000, status: "planned" as const, date: new Date("2026-03-15") },
+      ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "draft" as DocumentStatus },
       ],
     },
     {
@@ -391,6 +431,11 @@ export async function seedDemoData() {
         { kind: "delivery" as const, amount: 400000, status: "paid" as const, date: new Date("2026-02-20") },
         { kind: "deposit" as const, amount: 1000000, status: "paid" as const, date: new Date("2026-02-20") },
       ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "generated" as DocumentStatus },
+        { type: "transfer_act" as DocumentType, status: "generated" as DocumentStatus },
+        { type: "equipment_appendix" as DocumentType, status: "generated" as DocumentStatus },
+      ],
     },
     {
       client: "Волков Сергей Павлович",
@@ -410,6 +455,7 @@ export async function seedDemoData() {
       comment: "Лид: рассматривает аренду 3 станций для офиса",
       deliveryTasks: [],
       payments: [],
+      documents: [],
     },
     {
       client: "Петрова Ольга Викторовна",
@@ -447,6 +493,11 @@ export async function seedDemoData() {
         { kind: "rent" as const, amount: 2500000, status: "paid" as const, date: new Date("2026-03-03") },
         { kind: "delivery" as const, amount: 500000, status: "paid" as const, date: new Date("2026-03-03") },
         { kind: "deposit" as const, amount: 1000000, status: "paid" as const, date: new Date("2026-03-03") },
+      ],
+      documents: [
+        { type: "rental_contract" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "transfer_act" as DocumentType, status: "signed" as DocumentStatus },
+        { type: "equipment_appendix" as DocumentType, status: "generated" as DocumentStatus },
       ],
     },
   ];
@@ -531,6 +582,16 @@ export async function seedDemoData() {
       });
     }
 
+    for (const docDef of d.documents) {
+      const doc = await generateDocument(deal.id, docDef.type, rental.id);
+      if (doc.status !== docDef.status) {
+        await prisma.document.update({
+          where: { id: doc.id },
+          data: { status: docDef.status },
+        });
+      }
+    }
+
     if (d.assetStatus !== asset.status) {
       await prisma.asset.update({
         where: { id: asset.id },
@@ -564,6 +625,16 @@ export async function clearDemoData() {
       select: { id: true },
     })
   ).map((r) => r.id);
+
+  const demoDocuments = await prisma.document.findMany({
+    where: {
+      OR: [
+        { dealId: { in: demoDealIds } },
+        { rentalId: { in: demoRentalIds } },
+      ],
+    },
+    select: { filePath: true },
+  });
 
   await prisma.$transaction(async (tx) => {
     await tx.payment.deleteMany({
@@ -609,6 +680,16 @@ export async function clearDemoData() {
       data: { status: "available" },
     });
   });
+
+  for (const doc of demoDocuments) {
+    if (doc.filePath) {
+      try {
+        fs.unlinkSync(doc.filePath);
+      } catch {
+        // file may already be gone
+      }
+    }
+  }
 
   revalidatePath("/", "layout");
   return {

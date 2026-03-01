@@ -21,6 +21,8 @@ export type DocumentFilters = {
   dealId?: string;
   type?: DocumentType;
   status?: DocumentStatus;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 };
 
 export async function getDocuments(filters?: DocumentFilters) {
@@ -29,13 +31,20 @@ export async function getDocuments(filters?: DocumentFilters) {
   if (filters?.type) where.type = filters.type;
   if (filters?.status) where.status = filters.status;
 
+  const sortField = filters?.sortBy || "createdAt";
+  const sortDir = filters?.sortOrder || "desc";
+  const validFields = ["createdAt", "type", "status"];
+  const orderBy = validFields.includes(sortField)
+    ? { [sortField]: sortDir }
+    : { createdAt: "desc" as const };
+
   return prisma.document.findMany({
     where,
     include: {
       deal: { include: { client: true } },
       rental: { include: { asset: true } },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy,
   });
 }
 

@@ -4,6 +4,8 @@ import type { ClientCreateInput, ClientUpdateInput } from "@/domain/clients/vali
 export type ClientFilters = {
   search?: string;
   tag?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 };
 
 export async function getClients(filters?: ClientFilters) {
@@ -21,10 +23,14 @@ export async function getClients(filters?: ClientFilters) {
     where.tags = { has: filters.tag };
   }
 
-  return prisma.client.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-  });
+  const sortField = filters?.sortBy || "createdAt";
+  const sortDir = filters?.sortOrder || "desc";
+  const validFields = ["createdAt", "fullName", "email", "phone"];
+  const orderBy = validFields.includes(sortField)
+    ? { [sortField]: sortDir }
+    : { createdAt: "desc" as const };
+
+  return prisma.client.findMany({ where, orderBy });
 }
 
 export async function getClientById(id: string) {

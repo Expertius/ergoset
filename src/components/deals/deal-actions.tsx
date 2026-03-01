@@ -76,9 +76,13 @@ export function DealActions({ dealId, dealStatus, rentalId }: DealActionsProps) 
     formData.set("rentalId", rentalId);
     const result = await extendRentalAction(formData);
     if (result.success) {
-      toast.success("Аренда продлена");
+      toast.success("Создана сделка продления");
       setExtendOpen(false);
-      router.refresh();
+      if (result.id) {
+        router.push(`/deals/${result.id}`);
+      } else {
+        router.refresh();
+      }
     } else {
       toast.error(result.error);
     }
@@ -125,13 +129,29 @@ export function DealActions({ dealId, dealStatus, rentalId }: DealActionsProps) 
                 <DialogTitle>Продление аренды</DialogTitle>
               </DialogHeader>
               <form action={handleExtend} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Новая дата окончания *</Label>
-                  <Input name="newEndDate" type="date" required />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Новая дата окончания *</Label>
+                    <Input name="newEndDate" type="date" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Кол-во месяцев</Label>
+                    <Input name="plannedMonths" type="number" min="1" placeholder="—" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Сумма аренды (коп.)</Label>
+                    <Input name="amountRent" type="number" defaultValue="0" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Доставка (коп.)</Label>
+                    <Input name="amountDelivery" type="number" defaultValue="0" />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Сумма аренды (коп.)</Label>
-                  <Input name="amountRent" type="number" defaultValue="0" />
+                  <Label>Скидка (коп.)</Label>
+                  <Input name="amountDiscount" type="number" defaultValue="0" />
                 </div>
                 <div className="space-y-2">
                   <Label>Комментарий</Label>

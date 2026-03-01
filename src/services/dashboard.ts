@@ -110,10 +110,18 @@ export async function getDashboardStats() {
   };
 }
 
+export type CalendarFilters = {
+  assetId?: string;
+  clientId?: string;
+  statuses?: DealStatus[];
+  dealType?: DealType;
+  search?: string;
+};
+
 export async function getCalendarEvents(
   from: Date,
   to: Date,
-  filters?: { assetId?: string; clientId?: string }
+  filters?: CalendarFilters
 ) {
   const rentalWhere: Record<string, unknown> = {
     OR: [
@@ -124,9 +132,17 @@ export async function getCalendarEvents(
   };
 
   if (filters?.assetId) rentalWhere.assetId = filters.assetId;
-  if (filters?.clientId) {
-    rentalWhere.deal = { clientId: filters.clientId };
+
+  const dealWhere: Record<string, unknown> = {};
+  if (filters?.clientId) dealWhere.clientId = filters.clientId;
+  if (filters?.statuses?.length) dealWhere.status = { in: filters.statuses };
+  if (filters?.dealType) dealWhere.type = filters.dealType;
+  if (filters?.search) {
+    dealWhere.client = {
+      fullName: { contains: filters.search, mode: "insensitive" },
+    };
   }
+  if (Object.keys(dealWhere).length > 0) rentalWhere.deal = dealWhere;
 
   const rentals = await prisma.rental.findMany({
     where: rentalWhere,

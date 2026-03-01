@@ -1,5 +1,6 @@
 import { getDeals } from "@/services/deals";
 import { PageHeader } from "@/components/shared/page-header";
+import { SortableHeader } from "@/components/shared/sortable-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   DEAL_TYPE_LABELS,
@@ -21,7 +22,13 @@ import type { DealStatus, DealType } from "@/generated/prisma/browser";
 import { DealsFiltersBar } from "@/components/deals/deals-filters-bar";
 
 type Props = {
-  searchParams: Promise<{ search?: string; status?: string; type?: string }>;
+  searchParams: Promise<{
+    search?: string;
+    status?: string;
+    type?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }>;
 };
 
 export default async function DealsPage({ searchParams }: Props) {
@@ -30,6 +37,8 @@ export default async function DealsPage({ searchParams }: Props) {
     search: params.search,
     status: params.status as DealStatus | undefined,
     type: params.type as DealType | undefined,
+    sortBy: params.sortBy,
+    sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
   });
 
   return (
@@ -43,17 +52,17 @@ export default async function DealsPage({ searchParams }: Props) {
 
       <DealsFiltersBar />
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Клиент</TableHead>
-              <TableHead>Тип</TableHead>
-              <TableHead>Статус</TableHead>
+              <SortableHeader column="type" label="Тип" basePath="/deals" />
+              <SortableHeader column="status" label="Статус" basePath="/deals" />
               <TableHead>Станция</TableHead>
               <TableHead>Период</TableHead>
               <TableHead className="text-right">Сумма</TableHead>
-              <TableHead>Дата</TableHead>
+              <SortableHeader column="createdAt" label="Дата" basePath="/deals" />
             </TableRow>
           </TableHeader>
           <TableBody>

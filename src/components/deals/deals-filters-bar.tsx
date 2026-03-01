@@ -10,34 +10,46 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEAL_STATUS_LABELS, DEAL_TYPE_LABELS } from "@/lib/constants";
+import { useCallback, useState, useEffect } from "react";
 
 export function DealsFiltersBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("search") || "");
 
-  function update(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value && value !== "all") {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    router.push(`/deals?${params.toString()}`);
-  }
+  const updateParams = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value && value !== "all") {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      router.push(`/deals?${params.toString()}`);
+    },
+    [router, searchParams]
+  );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateParams("search", search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, updateParams]);
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-col sm:flex-row flex-wrap gap-3">
       <Input
         placeholder="Поиск по клиенту..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
         className="max-w-xs"
-        defaultValue={searchParams.get("search") || ""}
-        onChange={(e) => update("search", e.target.value)}
       />
       <Select
         defaultValue={searchParams.get("status") || "all"}
-        onValueChange={(v) => update("status", v)}
+        onValueChange={(v) => updateParams("status", v)}
       >
-        <SelectTrigger className="w-[200px]">
+        <SelectTrigger className="w-full sm:w-[200px]">
           <SelectValue placeholder="Статус" />
         </SelectTrigger>
         <SelectContent>
@@ -51,9 +63,9 @@ export function DealsFiltersBar() {
       </Select>
       <Select
         defaultValue={searchParams.get("type") || "all"}
-        onValueChange={(v) => update("type", v)}
+        onValueChange={(v) => updateParams("type", v)}
       >
-        <SelectTrigger className="w-[200px]">
+        <SelectTrigger className="w-full sm:w-[200px]">
           <SelectValue placeholder="Тип" />
         </SelectTrigger>
         <SelectContent>

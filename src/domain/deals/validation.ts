@@ -45,6 +45,7 @@ export const rentalCreateSchema = z.object({
 export const rentalExtendSchema = z.object({
   rentalId: z.string().min(1),
   newEndDate: z.coerce.date(),
+  plannedMonths: z.coerce.number().int().positive().optional(),
   amountRent: z.coerce.number().int().nonnegative().default(0),
   amountDelivery: z.coerce.number().int().nonnegative().default(0),
   amountDiscount: z.coerce.number().int().nonnegative().default(0),

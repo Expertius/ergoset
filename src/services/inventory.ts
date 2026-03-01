@@ -1,12 +1,31 @@
 import { prisma } from "@/lib/db";
 import type { InventoryAdjustInput } from "@/domain/inventory/validation";
 
-export async function getInventoryOverview() {
+export type InventoryFilters = {
+  search?: string;
+  category?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+};
+
+export async function getInventoryOverview(filters?: InventoryFilters) {
+  const where: Record<string, unknown> = {};
+
+  if (filters?.search || filters?.category) {
+    const accessoryWhere: Record<string, unknown> = {};
+    if (filters.search) {
+      accessoryWhere.name = { contains: filters.search, mode: "insensitive" };
+    }
+    if (filters.category) {
+      accessoryWhere.category = filters.category;
+    }
+    where.accessory = accessoryWhere;
+  }
+
   return prisma.inventoryItem.findMany({
-    include: {
-      accessory: true,
-    },
-    orderBy: { accessory: { name: "asc" } },
+    where,
+    include: { accessory: true },
+    orderBy: { accessory: { name: filters?.sortOrder || "asc" } },
   });
 }
 

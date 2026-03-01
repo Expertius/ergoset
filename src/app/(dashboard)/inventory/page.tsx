@@ -1,5 +1,6 @@
 import { getInventoryOverview, getMovements } from "@/services/inventory";
 import { PageHeader } from "@/components/shared/page-header";
+import { SortableHeader } from "@/components/shared/sortable-header";
 import { ACCESSORY_CATEGORY_LABELS } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import {
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InventoryAdjustButton } from "@/components/inventory/adjust-button";
+import { InventoryFiltersBar } from "@/components/inventory/filters-bar";
 
 const MOVEMENT_TYPE_LABELS: Record<string, string> = {
   incoming: "Поступление",
@@ -25,9 +27,24 @@ const MOVEMENT_TYPE_LABELS: Record<string, string> = {
   lost: "Потеря",
 };
 
-export default async function InventoryPage() {
+type Props = {
+  searchParams: Promise<{
+    search?: string;
+    category?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }>;
+};
+
+export default async function InventoryPage({ searchParams }: Props) {
+  const params = await searchParams;
   const [items, movements] = await Promise.all([
-    getInventoryOverview(),
+    getInventoryOverview({
+      search: params.search,
+      category: params.category,
+      sortBy: params.sortBy,
+      sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
+    }),
     getMovements(),
   ]);
 
@@ -46,11 +63,12 @@ export default async function InventoryPage() {
         </TabsList>
 
         <TabsContent value="stock">
-          <div className="rounded-md border">
+          <InventoryFiltersBar />
+          <div className="rounded-md border mt-3 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Аксессуар</TableHead>
+                  <SortableHeader column="name" label="Аксессуар" basePath="/inventory" />
                   <TableHead>Категория</TableHead>
                   <TableHead>Локация</TableHead>
                   <TableHead className="text-center">На складе</TableHead>
