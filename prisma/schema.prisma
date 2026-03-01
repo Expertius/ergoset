@@ -482,3 +482,46 @@ model AuditLog {
   @@index([entityType, entityId])
   @@map("audit_logs")
 }
+
+// ─── CATALOG / REFERENCE DATA ───────────────────────────
+
+model UpholsteryMaterial {
+  id             String            @id @default(cuid())
+  code           String            @unique
+  name           String
+  description    String?
+  surchargePrice Int               @default(0)
+  sortOrder      Int               @default(0)
+  isActive       Boolean           @default(true)
+  colors         UpholsteryColor[]
+  createdAt      DateTime          @default(now())
+
+  @@map("upholstery_materials")
+}
+
+model UpholsteryColor {
+  id         String             @id @default(cuid())
+  materialId String
+  material   UpholsteryMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  code       String
+  name       String
+  isDefault  Boolean            @default(false)
+  isActive   Boolean            @default(true)
+  sortOrder  Int                @default(0)
+
+  @@unique([materialId, code])
+  @@map("upholstery_colors")
+}
+
+model ServiceCatalog {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  price       Int
+  cities      String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("service_catalog")
+}

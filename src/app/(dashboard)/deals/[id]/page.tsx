@@ -193,6 +193,70 @@ export default async function DealDetailPage({ params }: Props) {
         </Card>
       )}
 
+      {/* Accessories */}
+      {rental && rental.accessories.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Аксессуары</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {rental.accessories.map((a) => (
+                <div key={a.id} className="flex items-center justify-between border-b pb-2 last:border-0 text-sm">
+                  <div>
+                    <span className="font-medium">{a.accessory.name}</span>
+                    <span className="text-muted-foreground ml-2">x{a.qty}</span>
+                    {a.isIncluded && (
+                      <span className="text-xs text-green-600 ml-2">Включено</span>
+                    )}
+                  </div>
+                  <span className="font-medium">
+                    {a.price > 0 ? formatCurrency(a.price) : "—"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Delivery Tasks */}
+      {rental && rental.deliveryTasks.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Логистика</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {rental.deliveryTasks.map((t) => (
+                <div key={t.id} className="flex items-center justify-between border-b pb-2 last:border-0 text-sm">
+                  <div>
+                    <span className="font-medium">
+                      {t.type === "delivery" ? "Доставка" : t.type === "pickup" ? "Забор" : t.type === "replacement" ? "Замена" : "Обслуживание"}
+                    </span>
+                    {t.plannedAt && (
+                      <p className="text-muted-foreground text-xs">{formatDate(t.plannedAt)}</p>
+                    )}
+                    {t.assignee && (
+                      <p className="text-muted-foreground text-xs">Исполнитель: {t.assignee}</p>
+                    )}
+                  </div>
+                  <StatusBadge
+                    label={t.status === "planned" ? "Запланировано" : t.status === "in_progress" ? "В процессе" : t.status === "completed" ? "Выполнено" : "Отменено"}
+                    colorClass={
+                      t.status === "completed" ? "bg-green-100 text-green-800" :
+                      t.status === "in_progress" ? "bg-blue-100 text-blue-800" :
+                      t.status === "canceled" ? "bg-red-100 text-red-800" :
+                      "bg-yellow-100 text-yellow-800"
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Payments */}
       <Card>
         <CardHeader>

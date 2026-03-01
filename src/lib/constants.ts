@@ -4,6 +4,22 @@ import type {
   DocumentStatus, DeliveryTaskType, DeliveryTaskStatus,
 } from "@/generated/prisma/browser";
 
+/** Base station price in kopecks (239 990 ₽) */
+export const BASE_STATION_PRICE = 23_999_000;
+
+export const UPHOLSTERY_MATERIAL_LABELS: Record<string, string> = {
+  bionica: "Искусственная кожа Bionica",
+  aurora: "Искусственная замша Aurora (LE)",
+  natural_leather: "Натуральная кожа",
+  custom_material: "Собственный материал",
+};
+
+export const SERVICE_CATALOG_LABELS: Record<string, string> = {
+  assembly: "Сборка станции",
+  white_frame: "Белый цвет металлокаркаса",
+  rental_test: "Аренда-тест (60 дней)",
+};
+
 export const ASSET_STATUS_LABELS: Record<AssetStatus, string> = {
   available: "Доступен",
   reserved: "Забронирован",

@@ -1,4 +1,47 @@
 import { prisma } from "@/lib/db";
+import type {
+  DealStatus,
+  DealType,
+  DeliveryTaskType,
+  DeliveryTaskStatus,
+} from "@/generated/prisma/browser";
+
+export type CalendarDeliveryTask = {
+  id: string;
+  type: DeliveryTaskType;
+  status: DeliveryTaskStatus;
+  plannedAt: string | null;
+  assignee: string | null;
+  address: string | null;
+  instructions: string | null;
+};
+
+export type CalendarEvent = {
+  id: string;
+  dealId: string;
+  clientName: string;
+  clientPhone: string | null;
+  clientEmail: string | null;
+  assetCode: string;
+  assetName: string;
+  startDate: string;
+  endDate: string;
+  dealStatus: DealStatus;
+  dealType: DealType;
+  rentAmount: number;
+  deliveryAmount: number;
+  assemblyAmount: number;
+  depositAmount: number;
+  discountAmount: number;
+  totalPlannedAmount: number;
+  plannedMonths: number | null;
+  addressDelivery: string | null;
+  addressPickup: string | null;
+  deliveryInstructions: string | null;
+  source: string | null;
+  comment: string | null;
+  deliveryTasks: CalendarDeliveryTask[];
+};
 
 export async function getDashboardStats() {
   const now = new Date();
@@ -95,15 +138,38 @@ export async function getCalendarEvents(
     orderBy: { startDate: "asc" },
   });
 
-  return rentals.map((r) => ({
+  return rentals.map((r): CalendarEvent => ({
     id: r.id,
     dealId: r.dealId,
+    clientName: r.deal.client.fullName,
+    clientPhone: r.deal.client.phone,
+    clientEmail: r.deal.client.email,
     assetCode: r.asset.code,
     assetName: r.asset.name,
-    clientName: r.deal.client.fullName,
-    startDate: r.startDate,
-    endDate: r.endDate,
+    startDate: r.startDate.toISOString(),
+    endDate: r.endDate.toISOString(),
     dealStatus: r.deal.status,
-    deliveryTasks: r.deliveryTasks,
+    dealType: r.deal.type,
+    rentAmount: r.rentAmount,
+    deliveryAmount: r.deliveryAmount,
+    assemblyAmount: r.assemblyAmount,
+    depositAmount: r.depositAmount,
+    discountAmount: r.discountAmount,
+    totalPlannedAmount: r.totalPlannedAmount,
+    plannedMonths: r.plannedMonths,
+    addressDelivery: r.addressDelivery,
+    addressPickup: r.addressPickup,
+    deliveryInstructions: r.deliveryInstructions,
+    source: r.deal.source,
+    comment: r.deal.comment,
+    deliveryTasks: r.deliveryTasks.map((t) => ({
+      id: t.id,
+      type: t.type,
+      status: t.status,
+      plannedAt: t.plannedAt?.toISOString() ?? null,
+      assignee: t.assignee,
+      address: t.address,
+      instructions: t.instructions,
+    })),
   }));
 }

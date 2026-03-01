@@ -2,13 +2,22 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DemoDataCard } from "@/components/settings/demo-data-card";
+import { getDemoStatus } from "@/actions/demo";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const demoStatus = await getDemoStatus();
+
   return (
     <div className="space-y-4">
       <PageHeader title="Настройки" description="Конфигурация системы" />
 
       <div className="grid gap-6 md:grid-cols-2">
+        <DemoDataCard
+          initialLoaded={demoStatus.loaded}
+          initialCount={demoStatus.count}
+        />
+
         <Card>
           <CardHeader>
             <CardTitle>Telegram уведомления</CardTitle>

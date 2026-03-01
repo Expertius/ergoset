@@ -1,9 +1,11 @@
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { prisma } from "./db";
 
-const JWT_SECRET = process.env.JWT_SECRET || "ergoset-dev-secret-change-in-prod";
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || "ergoset-dev-jwt-secret-2026"
+);
 const COOKIE_NAME = "ergoset-session";
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
@@ -14,31 +16,11 @@ export type SessionUser = {
   role: string;
 };
 
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
-}
-
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
-}
-
-function signToken(user: SessionUser): string {
-  return jwt.sign(user, JWT_SECRET, { expiresIn: MAX_AGE });
-}
-
-function verifyToken(token: string): SessionUser | null {
-  try {
-    return jwt.verify(token, JWT_SECRET) as SessionUser;
-  } catch {
-    return null;
-  }
-}
-
 export async function login(email: string, password: string): Promise<SessionUser | null> {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !user.isActive) return null;
 
-  const valid = await verifyPassword(password, user.passwordHash);
+  const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) return null;
 
   const session: SessionUser = {
@@ -48,7 +30,11 @@ export async function login(email: string, password: string): Promise<SessionUse
     role: user.role,
   };
 
-  const token = signToken(session);
+  const token = await new SignJWT(session as unknown as Record<string, unknown>)
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime(`${MAX_AGE}s`)
+    .sign(JWT_SECRET);
+
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
@@ -70,9 +56,11 @@ export async function getSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
-  return verifyToken(token);
-}
 
-export function getSessionFromToken(token: string): SessionUser | null {
-  return verifyToken(token);
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload as unknown as SessionUser;
+  } catch {
+    return null;
+  }
 }

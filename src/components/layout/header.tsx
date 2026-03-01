@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, LogOut } from "lucide-react";
 import { logoutAction } from "@/actions/auth";
 import { MobileSidebar } from "./mobile-sidebar";
+import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
   return (
@@ -22,6 +23,8 @@ export function Header() {
         </Sheet>
 
         <div className="flex-1" />
+
+        <ThemeToggle />
 
         <form action={logoutAction}>
           <Button variant="ghost" size="icon" type="submit" title="Выйти">

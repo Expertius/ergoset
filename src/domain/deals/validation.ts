@@ -51,6 +51,13 @@ export const rentalExtendSchema = z.object({
   comment: z.string().optional(),
 });
 
+export const accessoryLineSchema = z.object({
+  accessoryId: z.string().min(1),
+  qty: z.coerce.number().int().positive(),
+  price: z.coerce.number().int().nonnegative().default(0),
+  isIncluded: z.boolean().default(false),
+});
+
 export const dealQuickCreateSchema = z.object({
   clientId: z.string().min(1, "Клиент обязателен"),
   type: z.enum(["rent", "sale", "rent_to_purchase", "reservation", "return_deal", "exchange"]).default("rent"),
@@ -68,6 +75,7 @@ export const dealQuickCreateSchema = z.object({
   addressDelivery: z.string().optional(),
   addressPickup: z.string().optional(),
   notes: z.string().optional(),
+  accessories: z.array(accessoryLineSchema).default([]),
 }).refine((d) => d.endDate > d.startDate, {
   message: "Дата окончания должна быть позже даты начала",
   path: ["endDate"],

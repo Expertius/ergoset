@@ -13,6 +13,13 @@ export type ActionResult = {
 
 export async function createDealAction(formData: FormData): Promise<ActionResult> {
   const raw = Object.fromEntries(formData.entries());
+  const accessoriesJson = raw.accessories as string | undefined;
+  let accessories: { accessoryId: string; qty: number; price: number; isIncluded: boolean }[] = [];
+  if (accessoriesJson) {
+    try {
+      accessories = JSON.parse(accessoriesJson);
+    } catch { /* ignore parse errors */ }
+  }
   const parsed = dealQuickCreateSchema.safeParse({
     ...raw,
     rentAmount: raw.rentAmount ? Number(raw.rentAmount) : 0,
@@ -21,6 +28,7 @@ export async function createDealAction(formData: FormData): Promise<ActionResult
     depositAmount: raw.depositAmount ? Number(raw.depositAmount) : 0,
     discountAmount: raw.discountAmount ? Number(raw.discountAmount) : 0,
     plannedMonths: raw.plannedMonths ? Number(raw.plannedMonths) : undefined,
+    accessories,
   });
 
   if (!parsed.success) {

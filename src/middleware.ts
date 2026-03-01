@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getSessionFromToken } from "@/lib/auth";
-import { canAccessRoute } from "@/lib/rbac";
+import { jwtVerify } from "jose";
 
 const COOKIE_NAME = "ergoset-session";
 
-export function middleware(request: NextRequest) {
+async function verifyJWT(token: string): Promise<boolean> {
+  try {
+    const secret = new TextEncoder().encode(
+      process.env.JWT_SECRET || "ergoset-dev-jwt-secret-2026"
+    );
+    await jwtVerify(token, secret);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isLoginPage = pathname === "/login";
@@ -17,21 +28,15 @@ export function middleware(request: NextRequest) {
   if (isPublic) return NextResponse.next();
 
   const token = request.cookies.get(COOKIE_NAME)?.value;
-  const session = token ? getSessionFromToken(token) : null;
+  const isValid = token ? await verifyJWT(token) : false;
 
-  if (!session && !isLoginPage) {
+  if (!isValid && !isLoginPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  if (session && isLoginPage) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(url);
-  }
-
-  if (session && !isLoginPage && !canAccessRoute(pathname, session)) {
+  if (isValid && isLoginPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

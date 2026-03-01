@@ -152,6 +152,50 @@ export async function createDealWithRental(data: DealQuickCreateInput) {
       data: { status: "reserved" },
     });
 
+    // Reserve accessories
+    if (data.accessories && data.accessories.length > 0) {
+      for (const acc of data.accessories) {
+        const item = await tx.inventoryItem.findFirst({
+          where: { accessoryId: acc.accessoryId },
+        });
+        if (item) {
+          const available = item.qtyOnHand - item.qtyReserved;
+          if (available < acc.qty) {
+            const accessory = await tx.accessory.findUnique({
+              where: { id: acc.accessoryId },
+            });
+            throw new Error(
+              `Недостаточно аксессуара "${accessory?.name || acc.accessoryId}": доступно ${available}, требуется ${acc.qty}`
+            );
+          }
+          await tx.inventoryItem.update({
+            where: { id: item.id },
+            data: { qtyReserved: { increment: acc.qty } },
+          });
+        }
+
+        await tx.rentalAccessoryLine.create({
+          data: {
+            rentalId: rental.id,
+            accessoryId: acc.accessoryId,
+            qty: acc.qty,
+            price: acc.price,
+            isIncluded: acc.isIncluded,
+          },
+        });
+
+        await tx.inventoryMovement.create({
+          data: {
+            accessoryId: acc.accessoryId,
+            type: "reserve",
+            qty: acc.qty,
+            relatedRentalId: rental.id,
+            comment: "Автоматическое резервирование при создании аренды",
+          },
+        });
+      }
+    }
+
     return deal;
   });
 }
