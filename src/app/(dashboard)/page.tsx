@@ -149,27 +149,27 @@ export default async function DashboardPage() {
           value={`${kpis.margin}%`}
           delta={comparison.margin.delta}
           deltaLabel="п.п. vs прошлый мес."
-          icon={Percent}
+          icon={<Percent className="h-4 w-4 text-muted-foreground" />}
         />
         <KpiDeltaCard
           title="Средний чек"
           value={formatCurrency(kpis.avgCheck)}
           delta={comparison.avgCheck.delta}
-          icon={Receipt}
+          icon={<Receipt className="h-4 w-4 text-muted-foreground" />}
         />
         <KpiDeltaCard
           title="Оборачиваемость капитала"
           value={`${kpis.capitalTurnover}x`}
           delta={comparison.deals.delta}
           deltaLabel="сделки vs прошлый мес."
-          icon={RefreshCw}
+          icon={<RefreshCw className="h-4 w-4 text-muted-foreground" />}
         />
         <KpiDeltaCard
           title="Доход на станцию"
           value={formatCurrency(kpis.revenuePerAsset)}
           delta={comparison.revenue.delta}
           deltaLabel="доход vs прошлый мес."
-          icon={DollarSign}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
 

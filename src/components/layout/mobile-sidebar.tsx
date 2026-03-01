@@ -18,7 +18,7 @@ export function MobileSidebar() {
           <span>E-Station</span>
         </Link>
       </div>
-      <ScrollArea className="flex-1 py-2">
+      <ScrollArea className="flex-1 overflow-hidden py-2">
         <nav className="space-y-4 px-2">
           {navGroups.map((group) => (
             <div key={group.label}>
