@@ -1,0 +1,33 @@
+---
+description: "Zod-валидация — схемы, типы, конвенции."
+globs: src/domain/**/*.ts
+alwaysApply: false
+---
+
+# Domain / Validation
+
+## Структура
+
+Одна директория на сущность: `src/domain/<entity>/validation.ts`.
+
+## Конвенции
+
+- Даты/числа из FormData: `z.coerce.date()`, `z.coerce.number()`.
+- Денежные поля: `z.coerce.number().int().nonnegative()` (копейки).
+- Cross-field валидация: `.refine()` на объекте.
+- Enums: `z.enum([...])` со значениями из Prisma schema.
+- Defaults: `.default()` для необязательных полей.
+
+## Экспорт типов
+
+Всегда экспортируй inferred-тип рядом со схемой:
+
+```typescript
+export const entityCreateSchema = z.object({ ... });
+export type EntityCreateInput = z.infer<typeof entityCreateSchema>;
+```
+
+## Именование
+
+- Схемы: `entityActionSchema` — `dealCreateSchema`, `rentalExtendSchema`, `leadUpdateSchema`.
+- Типы: `EntityActionInput` — `DealCreateInput`, `RentalExtendInput`.

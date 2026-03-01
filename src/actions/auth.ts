@@ -1,18 +1,23 @@
 "use server";
 
+import { z } from "zod";
 import { login, logout } from "@/lib/auth";
 import { getHomeRoute } from "@/lib/rbac";
 import { redirect } from "next/navigation";
 
-export async function loginAction(formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+const loginSchema = z.object({
+  email: z.string().email("Некорректный email"),
+  password: z.string().min(1, "Введите пароль"),
+});
 
-  if (!email || !password) {
-    return { error: "Введите email и пароль" };
+export async function loginAction(formData: FormData) {
+  const raw = Object.fromEntries(formData.entries());
+  const result = loginSchema.safeParse(raw);
+  if (!result.success) {
+    return { error: result.error.errors[0]?.message || "Некорректные данные" };
   }
 
-  const user = await login(email, password);
+  const user = await login(result.data.email, result.data.password);
   if (!user) {
     return { error: "Неверный email или пароль" };
   }

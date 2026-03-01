@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Armchair } from "lucide-react";
+import { PublicMobileNav } from "@/components/public/mobile-nav";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,7 +11,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Armchair className="h-7 w-7 text-blue-500" />
             <span>ERGOSET</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
+          <nav aria-label="Основная навигация" className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
             <a href="#stations" className="hover:text-white transition-colors">Станции</a>
             <a href="#pricing" className="hover:text-white transition-colors">Тарифы</a>
             <a href="#how-it-works" className="hover:text-white transition-colors">Как работает</a>
@@ -30,6 +31,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             >
               Забронировать
             </a>
+            <PublicMobileNav />
           </div>
         </div>
       </header>

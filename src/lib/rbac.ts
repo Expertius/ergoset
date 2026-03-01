@@ -2,7 +2,7 @@ import type { SessionUser } from "./auth";
 
 export type Role = "ADMIN" | "MANAGER" | "LOGISTICS" | "CLIENT";
 
-const ROUTE_PERMISSIONS: { pattern: string; roles: Role[] }[] = [
+export const ROUTE_PERMISSIONS: { pattern: string; roles: Role[] }[] = [
   // System
   { pattern: "/settings", roles: ["ADMIN"] },
   { pattern: "/import", roles: ["ADMIN"] },

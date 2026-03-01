@@ -133,37 +133,40 @@ export async function getClientReport() {
 }
 
 export async function getUtilizationReport(monthsBack: number = 6) {
+  const clampedMonths = Math.min(monthsBack, 24);
   const now = new Date();
-  const results: { month: string; utilization: number; revenue: number }[] = [];
+  const totalAssets = await prisma.asset.count({ where: { isActive: true } });
 
-  for (let i = monthsBack - 1; i >= 0; i--) {
+  const months = Array.from({ length: clampedMonths }, (_, idx) => {
+    const i = clampedMonths - 1 - idx;
     const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+    return { start, end };
+  });
 
-    const [totalAssets, activeRentals, payments] = await Promise.all([
-      prisma.asset.count({ where: { isActive: true } }),
-      prisma.rental.count({
-        where: {
-          deal: { status: { in: ["active", "extended"] } },
-          startDate: { lte: end },
-          endDate: { gte: start },
-        },
-      }),
-      prisma.payment.aggregate({
-        where: {
-          status: "paid",
-          date: { gte: start, lte: end },
-        },
-        _sum: { amount: true },
-      }),
-    ]);
+  const results = await Promise.all(
+    months.map(async ({ start, end }) => {
+      const [activeRentals, payments] = await Promise.all([
+        prisma.rental.count({
+          where: {
+            deal: { status: { in: ["active", "extended"] } },
+            startDate: { lte: end },
+            endDate: { gte: start },
+          },
+        }),
+        prisma.payment.aggregate({
+          where: { status: "paid", date: { gte: start, lte: end } },
+          _sum: { amount: true },
+        }),
+      ]);
 
-    results.push({
-      month: start.toLocaleDateString("ru-RU", { month: "short", year: "2-digit" }),
-      utilization: totalAssets > 0 ? Math.round((activeRentals / totalAssets) * 100) : 0,
-      revenue: payments._sum.amount || 0,
-    });
-  }
+      return {
+        month: start.toLocaleDateString("ru-RU", { month: "short", year: "2-digit" }),
+        utilization: totalAssets > 0 ? Math.round((activeRentals / totalAssets) * 100) : 0,
+        revenue: payments._sum.amount || 0,
+      };
+    })
+  );
 
   return results;
 }

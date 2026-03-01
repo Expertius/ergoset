@@ -277,50 +277,48 @@ export async function getDealsFunnel() {
 // ─── Top assets by revenue ──────────────────────────────
 
 export async function getTopAssetsByRevenue(limit = 5) {
-  const assets = await prisma.asset.findMany({
-    where: { isActive: true },
-    include: {
-      rentals: {
-        include: { payments: { where: { status: "paid" } } },
-      },
-    },
-  });
+  const results = await prisma.$queryRaw<
+    { id: string; code: string; name: string; revenue: bigint }[]
+  >`
+    SELECT a.id, a.code, a.name, COALESCE(SUM(p.amount), 0) AS revenue
+    FROM assets a
+    LEFT JOIN rentals r ON r."assetId" = a.id
+    LEFT JOIN payments p ON p."rentalId" = r.id AND p.status = 'paid'
+    WHERE a."isActive" = true
+    GROUP BY a.id, a.code, a.name
+    ORDER BY revenue DESC
+    LIMIT ${limit}
+  `;
 
-  return assets
-    .map((a) => ({
-      id: a.id,
-      code: a.code,
-      name: a.name,
-      revenue: a.rentals.reduce(
-        (sum, r) => sum + r.payments.reduce((s, p) => s + p.amount, 0),
-        0
-      ),
-    }))
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, limit);
+  return results.map((r) => ({
+    id: r.id,
+    code: r.code,
+    name: r.name,
+    revenue: Number(r.revenue),
+  }));
 }
 
 // ─── Top clients by revenue ─────────────────────────────
 
 export async function getTopClientsByRevenue(limit = 5) {
-  const clients = await prisma.client.findMany({
-    include: {
-      deals: {
-        include: { payments: { where: { status: "paid" } } },
-      },
-    },
-  });
+  const results = await prisma.$queryRaw<
+    { id: string; name: string; revenue: bigint; deals_count: bigint }[]
+  >`
+    SELECT c.id, c."fullName" AS name,
+           COALESCE(SUM(p.amount), 0) AS revenue,
+           COUNT(DISTINCT d.id) AS deals_count
+    FROM clients c
+    LEFT JOIN deals d ON d."clientId" = c.id
+    LEFT JOIN payments p ON p."dealId" = d.id AND p.status = 'paid'
+    GROUP BY c.id, c."fullName"
+    ORDER BY revenue DESC
+    LIMIT ${limit}
+  `;
 
-  return clients
-    .map((c) => ({
-      id: c.id,
-      name: c.fullName,
-      revenue: c.deals.reduce(
-        (sum, d) => sum + d.payments.reduce((s, p) => s + p.amount, 0),
-        0
-      ),
-      dealsCount: c.deals.length,
-    }))
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, limit);
+  return results.map((r) => ({
+    id: r.id,
+    name: r.name,
+    revenue: Number(r.revenue),
+    dealsCount: Number(r.deals_count),
+  }));
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as path from "path";
 
 export async function GET(
@@ -32,11 +32,12 @@ export async function GET(
     return NextResponse.json({ error: "Нет доступа" }, { status: 403 });
   }
 
-  if (!fs.existsSync(doc.filePath)) {
+  const fileExists = await fs.access(doc.filePath).then(() => true).catch(() => false);
+  if (!fileExists) {
     return NextResponse.json({ error: "Файл отсутствует на диске" }, { status: 404 });
   }
 
-  const buffer = fs.readFileSync(doc.filePath);
+  const buffer = await fs.readFile(doc.filePath);
   const fileName = path.basename(doc.filePath);
 
   return new NextResponse(buffer, {

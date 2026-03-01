@@ -42,54 +42,67 @@ export async function getMovements(accessoryId?: string) {
 export async function adjustInventory(data: InventoryAdjustInput) {
   const { accessoryId, type, qty, location, comment } = data;
 
-  await prisma.inventoryMovement.create({
-    data: {
-      accessoryId,
-      type,
-      qty,
-      locationTo: type === "incoming" ? location : undefined,
-      locationFrom: ["issue", "writeoff", "lost"].includes(type) ? location : undefined,
-      comment,
-    },
-  });
+  return prisma.$transaction(async (tx) => {
+    let qtyDelta = 0;
+    let reserveDelta = 0;
 
-  const item = await prisma.inventoryItem.upsert({
-    where: { accessoryId_location: { accessoryId, location } },
-    create: {
-      accessoryId,
-      location,
-      qtyOnHand: type === "incoming" ? qty : 0,
-      qtyReserved: type === "reserve" ? qty : 0,
-    },
-    update: {},
-  });
+    switch (type) {
+      case "incoming":
+      case "return_item":
+        qtyDelta = qty;
+        break;
+      case "writeoff":
+      case "lost":
+      case "issue":
+        qtyDelta = -qty;
+        break;
+      case "reserve":
+        reserveDelta = qty;
+        break;
+      case "repair":
+        qtyDelta = -qty;
+        break;
+    }
 
-  let qtyDelta = 0;
-  let reserveDelta = 0;
+    const existing = await tx.inventoryItem.findUnique({
+      where: { accessoryId_location: { accessoryId, location } },
+    });
 
-  switch (type) {
-    case "incoming":
-    case "return_item":
-      qtyDelta = qty;
-      break;
-    case "writeoff":
-    case "lost":
-    case "issue":
-      qtyDelta = -qty;
-      break;
-    case "reserve":
-      reserveDelta = qty;
-      break;
-    case "repair":
-      qtyDelta = -qty;
-      break;
-  }
+    if (qtyDelta < 0 && existing && existing.qtyOnHand + qtyDelta < 0) {
+      throw new Error(
+        `Недостаточно остатка: на складе ${existing.qtyOnHand}, запрошено ${qty}`
+      );
+    }
 
-  return prisma.inventoryItem.update({
-    where: { id: item.id },
-    data: {
-      qtyOnHand: { increment: qtyDelta },
-      qtyReserved: { increment: reserveDelta },
-    },
+    if (!existing && qtyDelta < 0) {
+      throw new Error("Нельзя списать: позиция на этом складе не найдена");
+    }
+
+    const item = await tx.inventoryItem.upsert({
+      where: { accessoryId_location: { accessoryId, location } },
+      create: {
+        accessoryId,
+        location,
+        qtyOnHand: Math.max(0, qtyDelta),
+        qtyReserved: Math.max(0, reserveDelta),
+      },
+      update: {
+        qtyOnHand: { increment: qtyDelta },
+        qtyReserved: { increment: reserveDelta },
+      },
+    });
+
+    await tx.inventoryMovement.create({
+      data: {
+        accessoryId,
+        type,
+        qty,
+        locationTo: type === "incoming" ? location : undefined,
+        locationFrom: ["issue", "writeoff", "lost"].includes(type) ? location : undefined,
+        comment,
+      },
+    });
+
+    return item;
   });
 }

@@ -179,6 +179,8 @@ export async function estimateDeliveryCostsAction(params: {
   includeAssembly?: boolean;
   includeDisassembly?: boolean;
 }): Promise<ActionResult<Awaited<ReturnType<typeof logisticsService.calculateDeliveryCosts>>>> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "LOGISTICS", "MANAGER");
   try {
     const result = await logisticsService.calculateDeliveryCosts(params);
     return { success: true, data: result };
@@ -193,12 +195,13 @@ export async function estimateDeliveryCostsAction(params: {
 export async function addDeliveryCommentAction(
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "LOGISTICS", "MANAGER");
   try {
     const raw = Object.fromEntries(formData.entries());
     const parsed = deliveryCommentCreateSchema.parse(raw);
-    const session = await getSession();
 
-    await logisticsService.addDeliveryComment(parsed, session?.id);
+    await logisticsService.addDeliveryComment(parsed, session.id);
     revalidateLogistics();
     return { success: true };
   } catch (e) {
@@ -212,6 +215,8 @@ export async function addDeliveryCommentAction(
 export async function updateDeliveryRateAction(
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   try {
     const raw = Object.fromEntries(formData.entries());
     const parsed = deliveryRateUpdateSchema.parse(raw);

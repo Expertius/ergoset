@@ -1,0 +1,46 @@
+---
+description: "Prisma / DB — схема, миграции, типы, ошибки."
+globs: "prisma/**,src/services/**/*.ts"
+alwaysApply: false
+---
+
+# Prisma / Database
+
+## Схема
+
+- Файл: `prisma/schema.prisma`.
+- Генерация клиента: `output = "../src/generated/prisma"`.
+- Адаптер: `@prisma/adapter-pg` (PostgreSQL).
+
+## Конвенции данных
+
+- Цены — **в копейках** (Int), НЕ Float. `rentAmount`, `depositAmount` и т.д.
+- Даты — `DateTime` с `@default(now())` для `createdAt`, `@updatedAt` для `updatedAt`.
+- Soft delete — поле `deletedAt DateTime?` где нужно.
+- UUID: `@id @default(cuid())`.
+
+## Миграции
+
+- `npx prisma migrate dev --name описательное-имя` (kebab-case).
+- Никогда не редактируй существующие миграции.
+- После изменения schema: `npx prisma generate`.
+
+## Обработка ошибок
+
+```typescript
+import { PrismaClientKnownRequestError } from "@/generated/prisma/runtime/library";
+
+try {
+  await prisma.entity.create({ data });
+} catch (e) {
+  if (e instanceof PrismaClientKnownRequestError) {
+    if (e.code === "P2002") throw new Error("Запись уже существует");
+    if (e.code === "P2025") throw new Error("Запись не найдена");
+  }
+  throw e;
+}
+```
+
+## Контекст
+
+При работе с Prisma-запросами обращайся к `prisma/schema.prisma` для актуальных моделей и связей.

@@ -1,0 +1,43 @@
+---
+description: "React/UI паттерны — shadcn, forms, фильтры, серверные/клиентские компоненты."
+globs: "src/components/**/*.tsx,src/app/**/*.tsx"
+alwaysApply: false
+---
+
+# React / UI
+
+## Server vs Client
+
+- По умолчанию — Server Component. `"use client"` только при интерактивности (state, effects, handlers, browser API).
+- Формы, фильтры, modals, dropdowns — `"use client"`.
+- Страницы списков (page.tsx) — Server Component, данные через service.
+
+## Существующие shared-компоненты (переиспользуй!)
+
+- `PageHeader` (`@/components/shared/page-header`) — заголовок с back/create кнопками.
+- `SortableHeader` (`@/components/shared/sortable-header`) — сортировка через URL params.
+- `StatusBadge` (`@/components/shared/status-badge`) — статусы сделок.
+
+## Формы
+
+- `react-hook-form` + `@hookform/resolvers/zod` + Zod-схема из `@/domain/`.
+- Submit: вызов server action → toast (sonner) → `router.push()` / `router.refresh()`.
+- Ошибка: `toast.error(result.error)`.
+
+## Фильтры
+
+- URL search params (`useSearchParams`, `useRouter`).
+- Debounced search input.
+- Layout: `flex flex-col sm:flex-row gap-3`.
+
+## shadcn/ui
+
+- Компоненты в `src/components/ui/` — генерируются через `npx shadcn@latest add <name>`.
+- Не редактируй вручную без необходимости.
+- Используй существующие: Button, Input, Select, Dialog, Card, Table, Badge, Tabs.
+
+## Стилизация
+
+- Tailwind CSS 4. Утилиты: `cn()` из `@/lib/utils` (clsx + tailwind-merge).
+- Dark mode через `next-themes`, CSS переменные. Не хардкодь цвета.
+- Иконки: `lucide-react`.

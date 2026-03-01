@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { leadUpdateSchema } from "@/domain/leads/validation";
 import {
@@ -11,12 +12,23 @@ import { getSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { requireRole } from "@/lib/rbac";
 
+const VALID_LEAD_STATUSES = [
+  "new", "contacted", "qualified", "negotiation",
+  "contract_pending", "contract_filled", "converted", "rejected",
+] as const;
+
+const leadStatusSchema = z.enum(VALID_LEAD_STATUSES);
+
 export async function updateLeadAction(id: string, formData: FormData) {
   const session = await getSession();
   requireRole(session, "ADMIN", "MANAGER");
   try {
     const raw = Object.fromEntries(formData.entries());
-    const parsed = leadUpdateSchema.parse(raw);
+    const result = leadUpdateSchema.safeParse(raw);
+    if (!result.success) {
+      return { success: false, error: result.error.errors[0]?.message || "Некорректные данные" };
+    }
+    const parsed = result.data;
     const lead = await updateLeadService(id, {
       ...parsed,
       ...(parsed.status === "contacted" ? { contactedAt: new Date() } : {}),
@@ -94,12 +106,18 @@ export async function rejectLeadAction(leadId: string, reason?: string) {
 export async function changeLeadStatusAction(leadId: string, status: string) {
   const session = await getSession();
   requireRole(session, "ADMIN", "MANAGER");
+
+  const parsed = leadStatusSchema.safeParse(status);
+  if (!parsed.success) {
+    return { success: false, error: "Некорректный статус" };
+  }
+
   try {
     await updateLeadService(leadId, {
-      status: status as "new" | "contacted" | "qualified" | "negotiation" | "contract_pending" | "contract_filled" | "converted" | "rejected",
-      ...(status === "contacted" ? { contactedAt: new Date() } : {}),
+      status: parsed.data,
+      ...(parsed.data === "contacted" ? { contactedAt: new Date() } : {}),
     });
-    await logAudit("Lead", leadId, "status_change", { status });
+    await logAudit("Lead", leadId, "status_change", { status: parsed.data });
     revalidatePath("/leads");
     revalidatePath(`/leads/${leadId}`);
     return { success: true };

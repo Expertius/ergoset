@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
 import { leadPublicCreateSchema } from "@/domain/leads/validation";
 import { createLead } from "@/services/leads";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const rl = rateLimit(`leads:${ip}`, 5, 60_000);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Слишком много запросов. Попробуйте через минуту." },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await request.json();
     const parsed = leadPublicCreateSchema.parse(body);

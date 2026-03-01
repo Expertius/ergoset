@@ -1,5 +1,48 @@
 # AI Changelog
 
+## 2026-03-01 — Предрелизный аудит и рефакторинг
+
+### Безопасность (P0)
+- Добавлена авторизация в `addDeliveryCommentAction`, `updateDeliveryRateAction`, `estimateDeliveryCostsAction`
+- Убран hardcoded JWT secret fallback — теперь throw если `JWT_SECRET` не задан
+- Удалён мёртвый код `src/lib/supabase/` и зависимость `jsonwebtoken`
+
+### Стабильность (P1)
+- Добавлены `error.tsx`, `loading.tsx`, `not-found.tsx` для всех route groups
+- Исправлен баг в `adjustInventory` — обёрнуто в транзакцию, добавлена проверка отрицательного баланса
+- Все `fs.*Sync` заменены на async в `documents.ts` и `download/route.ts`
+- Добавлен `take` (200) в getClients, getLeads, getAssets, getAccessories, getDocuments
+- Исправлен N+1 в `deals.ts` — batch-запросы вместо per-item циклов
+- Zod-валидация добавлена в auth, cabinet, documents, leads actions
+- Rate limiting на `POST /api/public/leads` (5/мин) и `/api/public/contract` (10/мин)
+
+### Производительность (P2-P3)
+- `pg.Pool` — добавлен `max` (конфигурируется через `DB_POOL_MAX`)
+- Добавлены `@@index` в Prisma schema (Deal, Rental, Payment, Document, Expense, DeliveryTask, Lead)
+- `getTopAssetsByRevenue`, `getTopClientsByRevenue` — SQL-агрегация вместо in-memory
+- `getUtilizationReport` — параллельные запросы вместо последовательных
+
+### UX/UI (P2)
+- Добавлена мобильная навигация на публичном лендинге (burger menu)
+- Кнопка «Скачать» на странице документов
+- `alert()` заменён на `toast` в ContractFormClient
+- Ошибка загрузки отображается в StationsSection
+- aria-label на навигации, кнопках сворачивания sidebar
+
+### Code Quality
+- `invite.ts` — `generateInviteToken` возвращает `{ success: false }` вместо throw
+- `import.ts` — CSV-парсер обрабатывает кавычки, запятые в полях, escaped quotes, Windows CRLF
+- `closeRentalByReturn` — агрегация qty по itemId (один update вместо per-line)
+
+### Инфраструктура
+- Security headers в `next.config.ts` (X-Frame-Options, X-Content-Type-Options и др.)
+- Health check endpoint `/api/health`
+- `.env.example` дополнен (GOOGLE_MAPS_API_KEY, TELEGRAM_*, DB_POOL_MAX)
+- RBAC правила дедуплицированы (middleware импортирует из rbac.ts)
+- Vitest настроен, 36 unit-тестов (RBAC, rate-limit, utils, CSV-парсер)
+
+---
+
 ## 2026-03-01 — Ролевые личные кабинеты (ADMIN / MANAGER / LOGISTICS / CLIENT)
 
 ### Что сделано

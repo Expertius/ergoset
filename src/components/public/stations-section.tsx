@@ -20,12 +20,13 @@ type Station = {
 export function StationsSection({ onSelect }: { onSelect: (id: string, name: string) => void }) {
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     fetch("/api/public/stations")
       .then((r) => r.json())
       .then((d) => setStations(d.stations || []))
-      .catch(() => {})
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
@@ -35,6 +36,15 @@ export function StationsSection({ onSelect }: { onSelect: (id: string, name: str
         {[1, 2, 3].map((i) => (
           <div key={i} className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 animate-pulse h-64" />
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 text-zinc-400">
+        <Armchair className="mx-auto h-12 w-12 mb-4 opacity-50" />
+        <p>Не удалось загрузить станции. Попробуйте обновить страницу.</p>
       </div>
     );
   }

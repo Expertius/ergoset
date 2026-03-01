@@ -33,6 +33,7 @@ export async function getLeads(params: {
       assignedTo: { select: { id: true, fullName: true } },
     },
     orderBy: { [sortBy]: sortDir },
+    take: 200,
   });
 }
 

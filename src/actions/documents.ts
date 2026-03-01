@@ -1,5 +1,6 @@
 "use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import type { DocumentType, DocumentStatus } from "@/generated/prisma/browser";
 import * as docService from "@/services/documents";
@@ -11,6 +12,24 @@ export type ActionResult = {
   error?: string;
 };
 
+const VALID_DOC_TYPES: DocumentType[] = [
+  "rental_contract", "transfer_act", "return_act", "buyout_doc", "equipment_appendix",
+];
+const VALID_DOC_STATUSES: DocumentStatus[] = [
+  "draft", "generated", "sent", "signed", "archived",
+];
+
+const generateDocSchema = z.object({
+  dealId: z.string().min(1),
+  docType: z.enum(VALID_DOC_TYPES as [string, ...string[]]),
+  rentalId: z.string().optional(),
+});
+
+const updateStatusSchema = z.object({
+  id: z.string().min(1),
+  status: z.enum(VALID_DOC_STATUSES as [string, ...string[]]),
+});
+
 export async function generateDocumentAction(
   dealId: string,
   docType: string,
@@ -18,11 +37,17 @@ export async function generateDocumentAction(
 ): Promise<ActionResult> {
   const session = await getSession();
   requireRole(session, "ADMIN", "MANAGER");
+
+  const parsed = generateDocSchema.safeParse({ dealId, docType, rentalId });
+  if (!parsed.success) {
+    return { success: false, error: "Некорректный тип документа" };
+  }
+
   try {
     await docService.generateDocument(
-      dealId,
-      docType as DocumentType,
-      rentalId
+      parsed.data.dealId,
+      parsed.data.docType as DocumentType,
+      parsed.data.rentalId
     );
     revalidatePath("/documents");
     revalidatePath(`/deals/${dealId}`);
@@ -39,8 +64,14 @@ export async function updateDocumentStatusAction(
 ): Promise<ActionResult> {
   const session = await getSession();
   requireRole(session, "ADMIN", "MANAGER");
+
+  const parsed = updateStatusSchema.safeParse({ id, status });
+  if (!parsed.success) {
+    return { success: false, error: "Некорректный статус" };
+  }
+
   try {
-    await docService.updateDocumentStatus(id, status as DocumentStatus);
+    await docService.updateDocumentStatus(parsed.data.id, parsed.data.status as DocumentStatus);
     revalidatePath("/documents");
     return { success: true };
   } catch (e) {

@@ -10,15 +10,47 @@ export type ImportResult = {
   errors: { row: number; message: string }[];
 };
 
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        current += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ",") {
+        result.push(current.trim());
+        current = "";
+      } else {
+        current += ch;
+      }
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
 export function parseCSV(content: string): ImportRow[] {
-  const lines = content.trim().split("\n");
+  const lines = content.replace(/\r\n/g, "\n").trim().split("\n");
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+  const headers = parseCSVLine(lines[0]);
   const rows: ImportRow[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+    if (!lines[i].trim()) continue;
+    const values = parseCSVLine(lines[i]);
     const row: ImportRow = {};
     headers.forEach((h, idx) => {
       row[h] = values[idx] || "";

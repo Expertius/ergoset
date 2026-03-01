@@ -35,7 +35,7 @@ export async function getClients(filters?: ClientFilters) {
     ? { [sortField]: sortDir }
     : { createdAt: "desc" as const };
 
-  return prisma.client.findMany({ where, orderBy });
+  return prisma.client.findMany({ where, orderBy, take: 200 });
 }
 
 export async function getClientById(id: string) {

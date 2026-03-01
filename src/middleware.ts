@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { ROUTE_PERMISSIONS } from "@/lib/rbac";
 
 const COOKIE_NAME = "ergoset-session";
 
@@ -11,34 +12,19 @@ type JWTPayload = {
   role: string;
 };
 
+const JWT_SECRET = process.env.JWT_SECRET
+  ? new TextEncoder().encode(process.env.JWT_SECRET)
+  : null;
+
 async function decodeJWT(token: string): Promise<JWTPayload | null> {
+  if (!JWT_SECRET) return null;
   try {
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET || "ergoset-dev-jwt-secret-2026"
-    );
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, JWT_SECRET);
     return payload as unknown as JWTPayload;
   } catch {
     return null;
   }
 }
-
-const STAFF_ROUTE_PERMISSIONS: { pattern: string; roles: string[] }[] = [
-  { pattern: "/settings", roles: ["ADMIN"] },
-  { pattern: "/import", roles: ["ADMIN"] },
-  { pattern: "/reports", roles: ["ADMIN"] },
-  { pattern: "/payments", roles: ["ADMIN", "MANAGER"] },
-  { pattern: "/documents", roles: ["ADMIN", "MANAGER"] },
-  { pattern: "/deals", roles: ["ADMIN", "MANAGER"] },
-  { pattern: "/clients", roles: ["ADMIN", "MANAGER"] },
-  { pattern: "/leads", roles: ["ADMIN", "MANAGER"] },
-  { pattern: "/logistics", roles: ["ADMIN", "LOGISTICS"] },
-  { pattern: "/assets", roles: ["ADMIN", "MANAGER", "LOGISTICS"] },
-  { pattern: "/accessories", roles: ["ADMIN", "MANAGER", "LOGISTICS"] },
-  { pattern: "/inventory", roles: ["ADMIN", "LOGISTICS"] },
-  { pattern: "/calendar", roles: ["ADMIN", "MANAGER", "LOGISTICS"] },
-  { pattern: "/dashboard", roles: ["ADMIN", "MANAGER", "LOGISTICS"] },
-];
 
 function canAccessRoute(pathname: string, role: string): boolean {
   if (role === "ADMIN") return true;
@@ -47,7 +33,7 @@ function canAccessRoute(pathname: string, role: string): boolean {
     return pathname.startsWith("/cabinet");
   }
 
-  for (const rule of STAFF_ROUTE_PERMISSIONS) {
+  for (const rule of ROUTE_PERMISSIONS) {
     if (pathname.startsWith(rule.pattern)) {
       return rule.roles.includes(role);
     }

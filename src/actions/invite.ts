@@ -12,29 +12,34 @@ export async function generateInviteToken(clientId: string) {
   const session = await getSession();
   requireRole(session, "ADMIN", "MANAGER");
 
-  const client = await prisma.client.findUnique({ where: { id: clientId } });
-  if (!client) throw new Error("Клиент не найден");
-  if (!client.email) throw new Error("У клиента не указан email");
-  if (client.userId) throw new Error("Клиент уже имеет аккаунт");
+  try {
+    const client = await prisma.client.findUnique({ where: { id: clientId } });
+    if (!client) return { success: false as const, error: "Клиент не найден" };
+    if (!client.email) return { success: false as const, error: "У клиента не указан email" };
+    if (client.userId) return { success: false as const, error: "Клиент уже имеет аккаунт" };
 
-  const token = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7);
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
-  await prisma.client.update({
-    where: { id: clientId },
-    data: { inviteToken: token, inviteExpiresAt: expiresAt },
-  });
+    await prisma.client.update({
+      where: { id: clientId },
+      data: { inviteToken: token, inviteExpiresAt: expiresAt },
+    });
 
-  revalidatePath("/clients");
-  revalidatePath(`/clients/${clientId}`);
+    revalidatePath("/clients");
+    revalidatePath(`/clients/${clientId}`);
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  return {
-    success: true,
-    inviteUrl: `${baseUrl}/invite/${token}`,
-    token,
-  };
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    return {
+      success: true as const,
+      inviteUrl: `${baseUrl}/invite/${token}`,
+      token,
+    };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Ошибка создания приглашения";
+    return { success: false as const, error: msg };
+  }
 }
 
 export async function validateInviteToken(token: string) {

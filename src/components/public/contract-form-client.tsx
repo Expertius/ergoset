@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Armchair, CheckCircle2, Loader2, Send, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 type ContractState =
   | { type: "loading" }
@@ -64,7 +65,7 @@ export function ContractFormClient({ token }: { token: string }) {
       }
       setState({ type: "success" });
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Ошибка отправки");
+      toast.error(err instanceof Error ? err.message : "Ошибка отправки");
     } finally {
       setSubmitting(false);
     }

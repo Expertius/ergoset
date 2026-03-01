@@ -31,7 +31,7 @@ export async function getAssets(filters?: AssetFilters) {
     ? { [sortField]: sortDir }
     : { code: "asc" as const };
 
-  return prisma.asset.findMany({ where, orderBy });
+  return prisma.asset.findMany({ where, orderBy, take: 200 });
 }
 
 export async function getAssetById(id: string) {

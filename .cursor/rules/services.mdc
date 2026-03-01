@@ -1,0 +1,43 @@
+---
+description: "Service layer — Prisma queries, фильтрация, scoping, транзакции."
+globs: src/services/**/*.ts
+alwaysApply: false
+---
+
+# Service Layer
+
+## Правила
+
+- Чистый data-layer: без `getSession()`, без `cookies()`, без `revalidatePath()`.
+- Импорт Prisma: `import { prisma } from "@/lib/db"`.
+- Типы из `@/generated/prisma/browser` (DealStatus, DealType и т.д.).
+- Входные типы из `@/domain/*/validation` (inferred от Zod-схем).
+
+## Фильтрация
+
+Типизированные объекты фильтров:
+
+```typescript
+export type DealFilters = {
+  search?: string;
+  status?: DealStatus;
+  type?: DealType;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  createdById?: string; // RBAC scoping
+};
+```
+
+## RBAC scoping
+
+MANAGER видит только свои данные. Scoping применяется в actions через `buildDealScope(session)` / `buildLeadScope(session)` из `@/lib/rbac` и передаётся в фильтры.
+
+## N+1
+
+- Используй `include` осознанно — только нужные связи.
+- Для списков — `take: 100` или пагинация.
+- `select` когда нужны конкретные поля.
+
+## Транзакции
+
+`prisma.$transaction([...])` для multi-step операций (создание сделки + аренды + аксессуаров).

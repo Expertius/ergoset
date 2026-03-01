@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import type { DocumentType, DocumentStatus } from "@/generated/prisma/browser";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as path from "path";
 import { formatDate, formatCurrency } from "@/lib/utils";
 
@@ -49,6 +49,7 @@ export async function getDocuments(filters?: DocumentFilters) {
       rental: { include: { asset: true } },
     },
     orderBy,
+    take: 200,
   });
 }
 
@@ -82,8 +83,9 @@ export async function generateDocument(
 
   let filePath: string | undefined;
 
-  if (fs.existsSync(templatePath)) {
-    const content = fs.readFileSync(templatePath, "binary");
+  const templateExists = await fs.access(templatePath).then(() => true).catch(() => false);
+  if (templateExists) {
+    const content = await fs.readFile(templatePath, "binary");
     const zip = new PizZip(content);
     const doc = new Docxtemplater(zip, {
       paragraphLoop: true,
@@ -127,9 +129,7 @@ export async function generateDocument(
 
     doc.render(data);
 
-    if (!fs.existsSync(OUTPUT_DIR)) {
-      fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-    }
+    await fs.mkdir(OUTPUT_DIR, { recursive: true });
 
     const fileName = `${docType}-${deal.id.slice(0, 8)}-${Date.now()}.docx`;
     filePath = path.join(OUTPUT_DIR, fileName);
@@ -137,7 +137,7 @@ export async function generateDocument(
       type: "nodebuffer",
       compression: "DEFLATE",
     });
-    fs.writeFileSync(filePath, buf);
+    await fs.writeFile(filePath, buf);
   }
 
   const document = await prisma.document.create({

@@ -43,7 +43,7 @@ export function Sidebar() {
 
       <ScrollArea className="flex-1 overflow-hidden py-2">
         <TooltipProvider delayDuration={0}>
-          <nav className={cn("space-y-4", collapsed ? "px-1" : "px-2")}>
+          <nav aria-label="Основная навигация" className={cn("space-y-4", collapsed ? "px-1" : "px-2")}>
             {filteredGroups.map((group) => (
               <div key={group.label}>
                 {!collapsed && (
@@ -107,6 +107,8 @@ export function Sidebar() {
               variant="ghost"
               size="sm"
               onClick={toggle}
+              aria-expanded={!collapsed}
+              aria-label={collapsed ? "Развернуть меню" : "Свернуть меню"}
               className={cn(
                 "w-full",
                 collapsed ? "justify-center px-2" : "justify-start gap-2"

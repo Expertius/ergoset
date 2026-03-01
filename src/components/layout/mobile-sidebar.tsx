@@ -23,7 +23,7 @@ export function MobileSidebar() {
         </Link>
       </div>
       <ScrollArea className="flex-1 overflow-hidden py-2">
-        <nav className="space-y-4 px-2">
+        <nav aria-label="Мобильная навигация" className="space-y-4 px-2">
           {filteredGroups.map((group) => (
             <div key={group.label}>
               <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">

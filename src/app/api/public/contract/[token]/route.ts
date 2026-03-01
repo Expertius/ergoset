@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getLeadByContractToken, saveContractData } from "@/services/leads";
 import { contractDataSchema } from "@/domain/leads/validation";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function GET(
   _request: Request,
@@ -33,6 +34,15 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ token: string }> },
 ) {
+  const ip = getClientIp(request);
+  const rl = rateLimit(`contract:${ip}`, 10, 60_000);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Слишком много запросов. Попробуйте через минуту." },
+      { status: 429 }
+    );
+  }
+
   const { token } = await params;
   try {
     const lead = await getLeadByContractToken(token);

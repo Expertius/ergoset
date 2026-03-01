@@ -342,6 +342,10 @@ model Deal {
   documents  Document[]
   leads      Lead[]
 
+  @@index([clientId])
+  @@index([createdById])
+  @@index([status])
+  @@index([createdAt])
   @@map("deals")
 }
 
@@ -380,6 +384,10 @@ model Rental {
   documents      Document[]
   movements      InventoryMovement[]
 
+  @@index([dealId])
+  @@index([assetId])
+  @@index([startDate])
+  @@index([endDate])
   @@map("rentals")
 }
 
@@ -475,6 +483,9 @@ model DeliveryTask {
   comments  DeliveryComment[]
   expenses  Expense[]
 
+  @@index([rentalId])
+  @@index([status])
+  @@index([plannedAt])
   @@map("delivery_tasks")
 }
 
@@ -523,6 +534,9 @@ model Payment {
   deal    Deal    @relation(fields: [dealId], references: [id])
   rental  Rental? @relation(fields: [rentalId], references: [id])
 
+  @@index([dealId])
+  @@index([status])
+  @@index([date])
   @@map("payments")
 }
 
@@ -542,6 +556,9 @@ model Expense {
   deal         Deal?         @relation(fields: [dealId], references: [id])
   deliveryTask DeliveryTask? @relation(fields: [deliveryTaskId], references: [id])
 
+  @@index([dealId])
+  @@index([assetId])
+  @@index([date])
   @@map("expenses")
 }
 
@@ -561,6 +578,8 @@ model Document {
   deal    Deal    @relation(fields: [dealId], references: [id])
   rental  Rental? @relation(fields: [rentalId], references: [id])
 
+  @@index([dealId])
+  @@index([status])
   @@map("documents")
 }
 
@@ -670,5 +689,8 @@ model Lead {
   convertedClient Client? @relation(fields: [convertedClientId], references: [id])
   convertedDeal   Deal?   @relation(fields: [convertedDealId], references: [id])
 
+  @@index([status])
+  @@index([assignedToId])
+  @@index([createdAt])
   @@map("leads")
 }

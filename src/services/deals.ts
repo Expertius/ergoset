@@ -310,29 +310,43 @@ export async function closeRentalByReturn(rentalId: string) {
       data: { status: "available" },
     });
 
-    // Release accessory reservations
     const accessories = await tx.rentalAccessoryLine.findMany({
       where: { rentalId },
     });
-    for (const acc of accessories) {
-      const item = await tx.inventoryItem.findFirst({
-        where: { accessoryId: acc.accessoryId },
+
+    if (accessories.length > 0) {
+      const accIds = [...new Set(accessories.map((a) => a.accessoryId))];
+      const items = await tx.inventoryItem.findMany({
+        where: { accessoryId: { in: accIds } },
       });
-      if (item) {
-        await tx.inventoryItem.update({
-          where: { id: item.id },
-          data: { qtyReserved: { decrement: acc.qty } },
-        });
-        await tx.inventoryMovement.create({
-          data: {
-            accessoryId: acc.accessoryId,
-            type: "return_item",
-            qty: acc.qty,
-            relatedRentalId: rentalId,
-            comment: "Возврат при закрытии аренды",
-          },
-        });
+      const itemMap = new Map(items.map((i) => [i.accessoryId, i]));
+
+      const qtyByItem = new Map<string, number>();
+      for (const acc of accessories) {
+        const item = itemMap.get(acc.accessoryId);
+        if (item) {
+          qtyByItem.set(item.id, (qtyByItem.get(item.id) || 0) + acc.qty);
+        }
       }
+
+      await Promise.all(
+        Array.from(qtyByItem.entries()).map(([itemId, qty]) =>
+          tx.inventoryItem.update({
+            where: { id: itemId },
+            data: { qtyReserved: { decrement: qty } },
+          })
+        )
+      );
+
+      await tx.inventoryMovement.createMany({
+        data: accessories.map((acc) => ({
+          accessoryId: acc.accessoryId,
+          type: "return_item" as const,
+          qty: acc.qty,
+          relatedRentalId: rentalId,
+          comment: "Возврат при закрытии аренды",
+        })),
+      });
     }
 
     return rental;
@@ -386,26 +400,40 @@ export async function cancelDeal(dealId: string) {
       data: { status: "canceled" },
     });
 
-    for (const rental of deal.rentals) {
-      await tx.asset.update({
-        where: { id: rental.assetId },
-        data: { status: "available" },
-      });
+    const assetIds = deal.rentals.map((r) => r.assetId);
+    await tx.asset.updateMany({
+      where: { id: { in: assetIds } },
+      data: { status: "available" },
+    });
 
-      const accessories = await tx.rentalAccessoryLine.findMany({
-        where: { rentalId: rental.id },
+    const rentalIds = deal.rentals.map((r) => r.id);
+    const allAccessories = await tx.rentalAccessoryLine.findMany({
+      where: { rentalId: { in: rentalIds } },
+    });
+
+    if (allAccessories.length > 0) {
+      const accIds = [...new Set(allAccessories.map((a) => a.accessoryId))];
+      const items = await tx.inventoryItem.findMany({
+        where: { accessoryId: { in: accIds } },
       });
-      for (const acc of accessories) {
-        const item = await tx.inventoryItem.findFirst({
-          where: { accessoryId: acc.accessoryId },
-        });
+      const itemMap = new Map(items.map((i) => [i.accessoryId, i]));
+
+      const qtyByItem = new Map<string, number>();
+      for (const acc of allAccessories) {
+        const item = itemMap.get(acc.accessoryId);
         if (item) {
-          await tx.inventoryItem.update({
-            where: { id: item.id },
-            data: { qtyReserved: { decrement: acc.qty } },
-          });
+          qtyByItem.set(item.id, (qtyByItem.get(item.id) || 0) + acc.qty);
         }
       }
+
+      await Promise.all(
+        Array.from(qtyByItem.entries()).map(([itemId, qty]) =>
+          tx.inventoryItem.update({
+            where: { id: itemId },
+            data: { qtyReserved: { decrement: qty } },
+          })
+        )
+      );
     }
 
     return deal;

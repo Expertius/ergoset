@@ -1,0 +1,49 @@
+---
+description: "Паттерн Server Actions — валидация, RBAC, сервисы, аудит."
+globs: src/actions/**/*.ts
+alwaysApply: false
+---
+
+# Server Actions
+
+## Обязательная структура
+
+```typescript
+"use server";
+
+import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
+import { logAudit } from "@/lib/audit";
+import { revalidatePath } from "next/cache";
+import * as someService from "@/services/something";
+import { someSchema } from "@/domain/something/validation";
+
+export async function doSomethingAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = someSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  try {
+    const result = await someService.doSomething(parsed.data);
+    await logAudit("entity", result.id, "create", { ...details });
+    revalidatePath("/relevant-path");
+    return { success: true, id: result.id };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Ошибка";
+    return { success: false, error: msg };
+  }
+}
+```
+
+## Правила
+
+- Всегда `"use server"` первой строкой.
+- Тип ответа — `ActionResult { success: boolean; error?: string; id?: string }`. Определён в `src/actions/deals.ts`, переиспользуй.
+- Prisma — только через `src/services/`. Никогда `import { prisma }` в actions.
+- `revalidatePath()` — все затронутые маршруты + `/dashboard` + `/calendar` при изменении сделок/аренд.
+- Числовые поля из FormData — `Number(raw.field)` перед передачей в Zod.

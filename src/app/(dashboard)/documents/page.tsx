@@ -100,7 +100,12 @@ export default async function DocumentsPage({ searchParams }: Props) {
                 </TableCell>
                 <TableCell className="text-sm">
                   {doc.filePath ? (
-                    <span className="text-green-600">Сгенерирован</span>
+                    <a
+                      href={`/api/documents/${doc.id}/download`}
+                      className="text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                      Скачать
+                    </a>
                   ) : (
                     <span className="text-muted-foreground">Черновик</span>
                   )}

@@ -34,6 +34,7 @@ export async function getAccessories(filters?: AccessoryFilters) {
     where,
     include: { inventoryItems: true },
     orderBy,
+    take: 200,
   });
 }
 

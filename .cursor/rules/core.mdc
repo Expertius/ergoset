@@ -1,0 +1,60 @@
+---
+description: "ergoset — система аренды E-Station. Стек, архитектура, команды, конвенции."
+alwaysApply: true
+---
+
+# ergoset — Core
+
+## Стек
+
+Next.js 16 (App Router), TypeScript 5, Prisma 7.4 (PostgreSQL), Tailwind CSS 4, shadcn/ui (Radix), Zod 4, jose (JWT), react-hook-form, recharts, docxtemplater.
+
+## Архитектура
+
+```
+src/
+  app/           # Route groups: (dashboard), (cabinet), (public), api/
+  actions/       # Server Actions ("use server") — entry point для мутаций
+  services/      # Business logic + Prisma queries (чистый data-layer, без auth)
+  domain/        # Zod-схемы валидации по сущностям
+  components/
+    ui/          # shadcn/ui — НЕ трогать вручную, только через shadcn CLI
+    shared/      # PageHeader, StatusBadge, SortableHeader
+    layout/      # Sidebar, MobileSidebar, ThemeProvider
+  lib/           # auth.ts, rbac.ts, db.ts, audit.ts, constants.ts
+  generated/     # Prisma Client (автогенерация)
+```
+
+## Поток данных (мутации)
+
+`Action → Service → Prisma`. Никогда не вызывай Prisma напрямую из actions.
+
+## Ключевые утилиты
+
+- `getSession()` — текущий пользователь из JWT cookie
+- `requireRole(session, "ADMIN", "MANAGER")` — проверка роли, throws
+- `logAudit(entity, id, action, details)` — аудит изменений
+- `revalidatePath()` — инвалидация после мутации
+- `ActionResult { success, error?, id? }` — стандартный ответ actions
+
+## Роли RBAC
+
+ADMIN (всё), MANAGER (сделки/лиды/клиенты, scoped), LOGISTICS (доставка/активы), CLIENT (кабинет).
+
+## Команды
+
+- `npm run dev` — dev server
+- `npm run build` — production build
+- `npx prisma migrate dev --name <name>` — новая миграция
+- `npx prisma generate` — генерация клиента после изменений schema
+- `npx tsc --noEmit` — type check
+
+## Changelog и бэкапы
+
+- Обновляй `docs/AI_CHANGELOG.md` при нетривиальных изменениях (фичи, рефакторинг, схема/API, multi-file).
+- Бэкапы `docs/backups/backup-YYYY-MM-DD-HHMM.md` — только перед рискованными рефакторами.
+- Никаких файлов в корне репо.
+
+## Язык
+
+Русский по умолчанию. Код и комментарии — на английском. UI-тексты — на русском.
