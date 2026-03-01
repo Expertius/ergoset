@@ -195,7 +195,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(168, 85, 247, 0.3), rgba(6, 182, 212, 0.3));
+  background: linear-gradient(135deg, rgba(172, 255, 39, 0.3), rgba(125, 211, 50, 0.2), rgba(172, 255, 39, 0.1));
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
   pointer-events: none;
@@ -208,9 +208,20 @@
   background-size: 64px 64px;
 }
 
+.text-gradient-brand {
+  background: linear-gradient(135deg, #ACFF27, #7dd332, #d4ff70);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .text-gradient-blue {
   background: linear-gradient(135deg, #60a5fa, #a78bfa, #22d3ee);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.brand-glow {
+  box-shadow: 0 0 80px rgba(172, 255, 39, 0.08), 0 0 160px rgba(172, 255, 39, 0.04);
 }

@@ -76,7 +76,7 @@ export function StationsSection({ onSelect }: { onSelect: (id: string, name: str
               <p className="text-xs text-zinc-600 mt-0.5 font-mono">{s.code}</p>
             </div>
             {s.availability === "available" ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-xs font-medium text-emerald-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ACFF27]/10 border border-[#ACFF27]/20 px-3 py-1.5 text-xs font-medium text-[#ACFF27]">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Доступна
               </span>
@@ -100,7 +100,7 @@ export function StationsSection({ onSelect }: { onSelect: (id: string, name: str
 
           <button
             onClick={() => onSelect(s.id, s.name)}
-            className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/10 hover:shadow-blue-600/20 hover:brightness-110 transition-all duration-200"
+            className="w-full rounded-xl bg-[#ACFF27] px-4 py-3 text-sm font-bold text-black hover:bg-[#c4ff5c] transition-all duration-200 shadow-lg shadow-[#ACFF27]/10"
           >
             {s.availability === "available" ? "Забронировать" : "Оставить заявку"}
           </button>

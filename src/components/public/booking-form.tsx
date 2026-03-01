@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Send, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
+import { CheckCircle2, Loader2, ArrowRight } from "lucide-react";
 
 type BookingFormProps = {
   selectedStationId?: string;
@@ -87,8 +87,8 @@ export function BookingForm({ selectedStationId, selectedStationName }: BookingF
     return (
       <div className="text-center py-16">
         <div className="rounded-3xl glass-card inline-flex flex-col items-center p-12 max-w-md mx-auto">
-          <div className="rounded-full bg-emerald-500/10 p-4 mb-6">
-            <CheckCircle2 className="h-12 w-12 text-emerald-400" />
+          <div className="rounded-full bg-[#ACFF27]/10 p-4 mb-6">
+            <CheckCircle2 className="h-12 w-12 text-[#ACFF27]" />
           </div>
           <h3 className="text-2xl font-bold mb-3">Заявка отправлена!</h3>
           <p className="text-zinc-400 leading-relaxed">
@@ -100,14 +100,14 @@ export function BookingForm({ selectedStationId, selectedStationName }: BookingF
   }
 
   const inputClass =
-    "w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-white placeholder-zinc-600 focus:border-blue-500/50 focus:bg-white/[0.05] focus:ring-1 focus:ring-blue-500/30 outline-none transition-all duration-200 text-sm";
+    "w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-white placeholder-zinc-600 focus:border-[#ACFF27]/30 focus:bg-white/[0.05] focus:ring-1 focus:ring-[#ACFF27]/20 outline-none transition-all duration-200 text-sm";
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
       <div className="rounded-3xl glass-card p-8 sm:p-10 space-y-6">
         {selectedStationName && (
-          <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-4 text-center">
-            <p className="text-xs uppercase tracking-wider text-blue-400 mb-1">Выбранная станция</p>
+          <div className="rounded-2xl border border-[#ACFF27]/20 bg-[#ACFF27]/[0.04] p-4 text-center">
+            <p className="text-xs uppercase tracking-wider text-[#ACFF27] mb-1">Выбранная станция</p>
             <p className="font-semibold text-lg">{selectedStationName}</p>
           </div>
         )}
@@ -115,36 +115,17 @@ export function BookingForm({ selectedStationId, selectedStationName }: BookingF
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Имя *</label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={inputClass}
-              placeholder="Ваше имя"
-            />
+            <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="Ваше имя" />
           </div>
           <div>
             <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Телефон *</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className={inputClass}
-              placeholder="+7 (___) ___-__-__"
-            />
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} placeholder="+7 (___) ___-__-__" />
           </div>
         </div>
 
         <div>
           <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={inputClass}
-            placeholder="email@example.com"
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="email@example.com" />
         </div>
 
         <div>
@@ -157,7 +138,7 @@ export function BookingForm({ selectedStationId, selectedStationName }: BookingF
                 onClick={() => setInterest(opt.value)}
                 className={`rounded-xl border px-4 py-3 text-sm font-medium transition-all duration-200 ${
                   interest === opt.value
-                    ? "border-blue-500/50 bg-blue-500/10 text-blue-400 shadow-lg shadow-blue-500/5"
+                    ? "border-[#ACFF27]/40 bg-[#ACFF27]/10 text-[#ACFF27]"
                     : "border-white/[0.06] bg-white/[0.02] text-zinc-500 hover:border-white/10 hover:text-zinc-300"
                 }`}
               >
@@ -179,7 +160,7 @@ export function BookingForm({ selectedStationId, selectedStationName }: BookingF
                     onClick={() => setConfig(opt.value)}
                     className={`rounded-xl border px-3 py-2.5 text-sm transition-all duration-200 ${
                       config === opt.value
-                        ? "border-blue-500/50 bg-blue-500/10 text-blue-400"
+                        ? "border-[#ACFF27]/40 bg-[#ACFF27]/10 text-[#ACFF27]"
                         : "border-white/[0.06] bg-white/[0.02] text-zinc-500 hover:border-white/10 hover:text-zinc-300"
                     }`}
                   >
@@ -192,43 +173,19 @@ export function BookingForm({ selectedStationId, selectedStationName }: BookingF
             {config === "custom" && (
               <div>
                 <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Опишите конфигурацию</label>
-                <textarea
-                  value={customConfig}
-                  onChange={(e) => setCustomConfig(e.target.value)}
-                  rows={2}
-                  className={`${inputClass} resize-none`}
-                  placeholder="Какие мониторы, размеры, дополнительное оборудование..."
-                />
+                <textarea value={customConfig} onChange={(e) => setCustomConfig(e.target.value)} rows={2} className={`${inputClass} resize-none`} placeholder="Какие мониторы, размеры, дополнительное оборудование..." />
               </div>
             )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">
-                  Желаемая дата начала
-                </label>
-                <input
-                  type="date"
-                  value={desiredStartDate}
-                  onChange={(e) => setDesiredStartDate(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                  className={inputClass}
-                />
+                <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Желаемая дата начала</label>
+                <input type="date" value={desiredStartDate} onChange={(e) => setDesiredStartDate(e.target.value)} min={new Date().toISOString().split("T")[0]} className={inputClass} />
               </div>
               {interest === "rent" || interest === "rent_to_purchase" ? (
                 <div>
-                  <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">
-                    Срок аренды (мес.)
-                  </label>
-                  <input
-                    type="number"
-                    min={2}
-                    max={36}
-                    value={desiredMonths}
-                    onChange={(e) => setDesiredMonths(e.target.value)}
-                    className={inputClass}
-                    placeholder="Минимум 2 месяца"
-                  />
+                  <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Срок аренды (мес.)</label>
+                  <input type="number" min={2} max={36} value={desiredMonths} onChange={(e) => setDesiredMonths(e.target.value)} className={inputClass} placeholder="Минимум 2 месяца" />
                 </div>
               ) : null}
             </div>
@@ -237,31 +194,19 @@ export function BookingForm({ selectedStationId, selectedStationName }: BookingF
 
         <div>
           <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-2">Комментарий</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            className={`${inputClass} resize-none`}
-            placeholder="Дополнительные пожелания, вопросы..."
-          />
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className={`${inputClass} resize-none`} placeholder="Дополнительные пожелания, вопросы..." />
         </div>
 
         {error && (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-4 text-sm text-red-400">
-            {error}
-          </div>
+          <div className="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-4 text-sm text-red-400">{error}</div>
         )}
 
         <button
           type="submit"
           disabled={loading || !name}
-          className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-6 py-4 text-base font-semibold text-white shadow-2xl shadow-blue-600/10 hover:shadow-blue-600/20 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+          className="w-full rounded-xl bg-[#ACFF27] px-6 py-4 text-base font-bold text-black hover:bg-[#c4ff5c] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-2xl shadow-[#ACFF27]/10"
         >
-          {loading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <ArrowRight className="h-5 w-5" />
-          )}
+          {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRight className="h-5 w-5" />}
           {loading ? "Отправка..." : "Отправить заявку"}
         </button>
 
