@@ -13,6 +13,7 @@ import {
   calculateRouteSchema,
 } from "@/domain/logistics/validation";
 import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
 
 export type ActionResult<T = void> = {
   success: boolean;
@@ -24,7 +25,7 @@ function revalidateLogistics() {
   revalidatePath("/logistics");
   revalidatePath("/deals");
   revalidatePath("/calendar");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 // ─── CRUD ───────────────────────────────────────────────
@@ -32,6 +33,8 @@ function revalidateLogistics() {
 export async function createDeliveryTaskAction(
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "LOGISTICS");
   try {
     const raw = Object.fromEntries(formData.entries());
     const parsed = deliveryTaskCreateSchema.parse({
@@ -52,6 +55,8 @@ export async function createDeliveryTaskAction(
 export async function updateDeliveryTaskAction(
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "LOGISTICS");
   try {
     const raw = Object.fromEntries(formData.entries());
     const parsed = deliveryTaskUpdateSchema.parse({
@@ -73,6 +78,8 @@ export async function updateDeliveryTaskStatusAction(
   id: string,
   status: string
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "LOGISTICS");
   try {
     if (status === "in_progress") {
       await logisticsService.startDeliveryTask(id);
@@ -94,6 +101,8 @@ export async function updateDeliveryTaskStatusAction(
 export async function completeDeliveryTaskAction(
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "LOGISTICS");
   try {
     const raw = Object.fromEntries(formData.entries());
     const parsed = deliveryTaskCompleteSchema.parse(raw);
@@ -112,6 +121,8 @@ export async function completeDeliveryTaskAction(
 export async function deleteDeliveryTaskAction(
   id: string
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "LOGISTICS");
   try {
     await logisticsService.deleteDeliveryTask(id);
     await logAudit("delivery_task", id, "delete", {});

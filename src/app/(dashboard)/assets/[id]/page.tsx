@@ -1,4 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { canSeeRetailPrices } from "@/lib/rbac";
 import { getAssetById } from "@/services/assets";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -16,9 +18,14 @@ type Props = {
 
 export default async function AssetDetailPage({ params }: Props) {
   const { id } = await params;
-  const asset = await getAssetById(id);
+  const session = await getSession();
+  if (!session) redirect("/login");
 
+  const asset = await getAssetById(id);
   if (!asset) return notFound();
+
+  const isAdmin = session.role === "ADMIN";
+  const showPrices = canSeeRetailPrices(session.role);
 
   const fields = [
     { label: "Код", value: asset.code },
@@ -28,10 +35,10 @@ export default async function AssetDetailPage({ params }: Props) {
     { label: "Цвет", value: asset.color },
     { label: "Тип стола", value: asset.tableType },
     { label: "Локация", value: asset.location },
-    { label: "Дата покупки", value: asset.purchaseDate ? formatDate(asset.purchaseDate) : null },
-    { label: "Цена закупки", value: asset.purchasePrice ? formatCurrency(asset.purchasePrice) : null },
-    { label: "Дилерская", value: asset.dealerPrice ? formatCurrency(asset.dealerPrice) : null },
-    { label: "Розничная", value: asset.retailPrice ? formatCurrency(asset.retailPrice) : null },
+    { label: "Дата покупки", value: isAdmin && asset.purchaseDate ? formatDate(asset.purchaseDate) : null },
+    { label: "Цена закупки", value: isAdmin && asset.purchasePrice ? formatCurrency(asset.purchasePrice) : null },
+    { label: "Дилерская", value: isAdmin && asset.dealerPrice ? formatCurrency(asset.dealerPrice) : null },
+    { label: "Розничная", value: showPrices && asset.retailPrice ? formatCurrency(asset.retailPrice) : null },
   ];
 
   return (
@@ -39,12 +46,14 @@ export default async function AssetDetailPage({ params }: Props) {
       <PageHeader
         title={asset.name}
         action={
-          <Button asChild variant="outline">
-            <Link href={`/assets/${asset.id}/edit`}>
-              <Pencil className="h-4 w-4 mr-2" />
-              Редактировать
-            </Link>
-          </Button>
+          isAdmin ? (
+            <Button asChild variant="outline">
+              <Link href={`/assets/${asset.id}/edit`}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Редактировать
+              </Link>
+            </Button>
+          ) : null
         }
       />
 
@@ -102,9 +111,11 @@ export default async function AssetDetailPage({ params }: Props) {
                         {formatDate(rental.startDate)} — {formatDate(rental.endDate)}
                       </p>
                     </div>
-                    <span className="font-medium">
-                      {formatCurrency(rental.rentAmount)}
-                    </span>
+                    {showPrices && (
+                      <span className="font-medium">
+                        {formatCurrency(rental.rentAmount)}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

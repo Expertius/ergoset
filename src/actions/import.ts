@@ -10,6 +10,8 @@ import {
   type ImportEntity,
   type ImportResult,
 } from "@/services/import";
+import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
 
 export type ImportActionResult = {
   success: boolean;
@@ -19,6 +21,8 @@ export type ImportActionResult = {
 };
 
 export async function previewCSVAction(formData: FormData): Promise<ImportActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   const file = formData.get("file") as File;
   if (!file || file.size === 0) {
     return { success: false, error: "Файл не выбран" };
@@ -45,6 +49,8 @@ export async function previewCSVAction(formData: FormData): Promise<ImportAction
 }
 
 export async function executeImportAction(formData: FormData): Promise<ImportActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   const file = formData.get("file") as File;
   const entity = formData.get("entity") as ImportEntity;
   const mappingJson = formData.get("mapping") as string;

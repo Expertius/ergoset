@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { canSeeRetailPrices } from "@/lib/rbac";
 import { getAssets } from "@/services/assets";
 import { PageHeader } from "@/components/shared/page-header";
 import { SortableHeader } from "@/components/shared/sortable-header";
@@ -26,6 +29,12 @@ type Props = {
 };
 
 export default async function AssetsPage({ searchParams }: Props) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const isAdmin = session.role === "ADMIN";
+  const showRetailPrices = canSeeRetailPrices(session.role);
+
   const params = await searchParams;
   const assets = await getAssets({
     search: params.search,
@@ -34,13 +43,15 @@ export default async function AssetsPage({ searchParams }: Props) {
     sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
   });
 
+  const colCount = 4 + (showRetailPrices ? 1 : 0) + (isAdmin ? 1 : 0);
+
   return (
     <div className="space-y-4">
       <PageHeader
         title="Станции"
         description={`Всего: ${assets.length}`}
-        createHref="/assets/new"
-        createLabel="Добавить станцию"
+        createHref={isAdmin ? "/assets/new" : undefined}
+        createLabel={isAdmin ? "Добавить станцию" : undefined}
       />
 
       <AssetFiltersBar />
@@ -53,14 +64,18 @@ export default async function AssetsPage({ searchParams }: Props) {
               <SortableHeader column="name" label="Название" basePath="/assets" />
               <TableHead>Цвет</TableHead>
               <SortableHeader column="status" label="Статус" basePath="/assets" />
-              <SortableHeader column="retailPrice" label="Розница" basePath="/assets" className="text-right" />
-              <SortableHeader column="purchasePrice" label="Закупка" basePath="/assets" className="text-right" />
+              {showRetailPrices && (
+                <SortableHeader column="retailPrice" label="Розница" basePath="/assets" className="text-right" />
+              )}
+              {isAdmin && (
+                <SortableHeader column="purchasePrice" label="Закупка" basePath="/assets" className="text-right" />
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {assets.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={colCount} className="text-center text-muted-foreground py-8">
                   Станции не найдены
                 </TableCell>
               </TableRow>
@@ -92,12 +107,16 @@ export default async function AssetsPage({ searchParams }: Props) {
                     colorClass={ASSET_STATUS_COLORS[asset.status]}
                   />
                 </TableCell>
-                <TableCell className="text-right">
-                  {asset.retailPrice ? formatCurrency(asset.retailPrice) : "—"}
-                </TableCell>
-                <TableCell className="text-right">
-                  {asset.purchasePrice ? formatCurrency(asset.purchasePrice) : "—"}
-                </TableCell>
+                {showRetailPrices && (
+                  <TableCell className="text-right">
+                    {asset.retailPrice ? formatCurrency(asset.retailPrice) : "—"}
+                  </TableCell>
+                )}
+                {isAdmin && (
+                  <TableCell className="text-right">
+                    {asset.purchasePrice ? formatCurrency(asset.purchasePrice) : "—"}
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

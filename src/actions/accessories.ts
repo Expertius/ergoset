@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { accessoryCreateSchema, accessoryUpdateSchema } from "@/domain/accessories/validation";
 import * as accessoryService from "@/services/accessories";
+import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
 
 export type ActionResult = {
   success: boolean;
@@ -10,6 +12,8 @@ export type ActionResult = {
 };
 
 export async function createAccessoryAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   const raw = Object.fromEntries(formData.entries());
   const parsed = accessoryCreateSchema.safeParse({
     ...raw,
@@ -33,6 +37,8 @@ export async function createAccessoryAction(formData: FormData): Promise<ActionR
 }
 
 export async function updateAccessoryAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   const raw = Object.fromEntries(formData.entries());
   const parsed = accessoryUpdateSchema.safeParse({
     ...raw,
@@ -56,6 +62,8 @@ export async function updateAccessoryAction(formData: FormData): Promise<ActionR
 }
 
 export async function deleteAccessoryAction(id: string): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   try {
     await accessoryService.deleteAccessory(id);
     revalidatePath("/accessories");

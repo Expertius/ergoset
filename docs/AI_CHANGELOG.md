@@ -1,5 +1,175 @@
 # AI Changelog
 
+## 2026-03-01 — Ролевые личные кабинеты (ADMIN / MANAGER / LOGISTICS / CLIENT)
+
+### Что сделано
+
+**Схема БД:**
+- Добавлена роль `CLIENT` в enum `UserRole`
+- Модель `Client`: новые поля `userId` (связь с User), `inviteToken`, `inviteExpiresAt` для magic-link
+- Обратная связь `User.clientProfile`
+
+**RBAC (src/lib/rbac.ts):**
+- Полная матрица доступа для 4 ролей
+- Data scoping helpers: `buildDealScope()`, `buildLeadScope()` — MANAGER видит только свои
+- Sanitize helpers: `sanitizePrices()`, `canSeeFinancials()`, `canSeeExpenses()`, `canSeeRetailPrices()`
+- Утилиты: `getHomeRoute()`, `isStaffRole()`
+
+**Middleware (src/middleware.ts):**
+- Полная переработка: JWT decode → извлечение роли → canAccessRoute()
+- CLIENT: доступ только к /cabinet/*, /invite/*
+- Staff: маршруты по матрице RBAC
+- Role-based redirect после авторизации
+
+**Навигация:**
+- `nav-items.ts`: добавлен `roles: Role[]` к каждому NavItem
+- `getFilteredNavGroups(role)` для фильтрации
+- Sidebar и MobileSidebar: фильтрация по роли через UserProvider context
+- UserProvider context (user-context.tsx) передаёт роль из серверного layout
+
+**Авторизация:**
+- Login action: редирект CLIENT → /cabinet, остальные → /dashboard
+- Dashboard layout: защита от CLIENT, редирект на /cabinet
+- Cabinet layout: защита от не-CLIENT, редирект на /dashboard
+
+**Magic-Link (клиентская регистрация):**
+- `generateInviteToken()` — генерация invite-ссылки менеджером
+- `validateInviteToken()` — проверка токена
+- `activateClientAccount()` — создание User(CLIENT), привязка к Client
+- UI: /invite/[token] — публичная страница активации аккаунта
+
+**Клиентский портал (src/app/(cabinet)/):**
+- CabinetHeader с навигацией + mobile menu
+- Дашборд: активные аренды, предстоящие платежи, документы
+- Аренды: список + детальная карточка (периоды, аксессуары, доставки, документы)
+- Платежи: итоги + полный список
+- Документы: скачивание
+- Профиль: редактирование телефона/адреса + смена пароля
+- Сервис `cabinet.ts` для data-fetching
+
+**Ролевые дашборды:**
+- AdminDashboard — полный (финансы, KPI, графики, ТОП)
+- ManagerDashboard — упрощённый (мои сделки, мои лиды, мои возвраты)
+- LogisticsDashboard — логистический (задачи сегодня/неделя, парк, в процессе)
+- Dashboard page: switch по session.role
+
+**Server actions — role checks:**
+- Все actions (deals, clients, assets, accessories, payments, documents, logistics, inventory, import, leads) защищены `requireRole()`
+- Expenses: только ADMIN
+- Import/Settings: только ADMIN
+- Logistics: ADMIN + LOGISTICS
+
+**Data scoping:**
+- Deals page: MANAGER видит только свои (createdById)
+- Leads page: MANAGER видит только назначенные (assignedToId)
+- Clients page: MANAGER видит только связанных через свои сделки
+- Payments page: MANAGER видит только по своим сделкам
+- Deal detail: MANAGER не видит чужие сделки (notFound)
+- Lead detail: MANAGER не видит чужие лиды
+
+**Field hiding:**
+- Asset detail: purchasePrice/dealerPrice скрыты для не-ADMIN, retailPrice скрыт для LOGISTICS
+- Edit button скрыт для не-ADMIN
+- Payments page: expenses и financial summary скрыты для не-ADMIN
+- Document download API: проверка доступа по роли (CLIENT видит только свои)
+
+### Изменённые файлы (31):
+- `prisma/schema.prisma`, `src/lib/rbac.ts`, `src/middleware.ts`
+- `src/lib/auth.ts` (без изменений, уже содержит role)
+- `src/actions/auth.ts`, `src/actions/deals.ts`, `src/actions/clients.ts`, `src/actions/assets.ts`, `src/actions/accessories.ts`, `src/actions/payments.ts`, `src/actions/documents.ts`, `src/actions/logistics.ts`, `src/actions/inventory.ts`, `src/actions/import.ts`, `src/actions/leads.ts`
+- `src/components/layout/nav-items.ts`, `src/components/layout/sidebar.tsx`, `src/components/layout/mobile-sidebar.tsx`, `src/components/layout/user-context.tsx` (new)
+- `src/app/(dashboard)/layout.tsx`, `src/app/(dashboard)/dashboard/page.tsx`
+- `src/app/(dashboard)/assets/[id]/page.tsx`, `src/app/(dashboard)/deals/page.tsx`, `src/app/(dashboard)/deals/[id]/page.tsx`, `src/app/(dashboard)/clients/page.tsx`, `src/app/(dashboard)/payments/page.tsx`, `src/app/(dashboard)/leads/page.tsx`, `src/app/(dashboard)/leads/[id]/page.tsx`
+- `src/services/deals.ts`, `src/services/clients.ts`, `src/services/payments.ts`, `src/services/leads.ts`
+- `src/app/api/documents/[id]/download/route.ts`
+
+### Новые файлы (18):
+- `src/actions/invite.ts`, `src/actions/cabinet.ts`
+- `src/app/invite/[token]/page.tsx`, `src/app/invite/[token]/invite-form.tsx`
+- `src/app/(cabinet)/layout.tsx`, `src/app/(cabinet)/cabinet/page.tsx`
+- `src/app/(cabinet)/cabinet/rentals/page.tsx`, `src/app/(cabinet)/cabinet/rentals/[id]/page.tsx`
+- `src/app/(cabinet)/cabinet/payments/page.tsx`, `src/app/(cabinet)/cabinet/documents/page.tsx`
+- `src/app/(cabinet)/cabinet/profile/page.tsx`, `src/app/(cabinet)/cabinet/profile/profile-form.tsx`
+- `src/components/cabinet/cabinet-header.tsx`
+- `src/components/dashboard/admin-dashboard.tsx`, `src/components/dashboard/manager-dashboard.tsx`, `src/components/dashboard/logistics-dashboard.tsx`
+- `src/services/cabinet.ts`, `src/services/dashboard-scoped.ts`
+
+---
+
+## 2026-03-01 — Публичный лендинг ERGOSET + CRM лидов + Автозаполнение договоров
+
+### Что сделано
+
+**Модель данных:**
+- Новая модель `Lead` в Prisma с enum'ами `LeadStatus`, `LeadSource`, `LeadInterest`
+- Обратные связи в Asset, User, Client, Deal
+- Миграция `20260301090733_add_leads_model`
+
+**Реструктуризация маршрутов:**
+- Дашборд переехал с `/` на `/dashboard`
+- `/` стал публичным лендингом ERGOSET
+- Middleware обновлён: публичные маршруты `/`, `/api/public/*`, `/contract/*`
+- Навигация: добавлен "Лиды" в sidebar, дашборд → `/dashboard`
+- `revalidatePath("/")` → `/dashboard` во всех actions
+
+**Публичный лендинг (ergoset.ru стиль):**
+- Тёмная тема, секции: Hero, преимущества, как работает подписка, доступные станции (live из БД), тарифы, конфигуратор мониторов, спеки, форма бронирования, FAQ, CTA
+- Станции синхронизированы с реальным статусом + скоро освобождающиеся (endDate < 30 дней)
+- Форма бронирования создаёт лид через `POST /api/public/leads`
+
+**Public API:**
+- `GET /api/public/stations` — доступные + скоро освободятся
+- `POST /api/public/leads` — создание лида с сайта
+- `GET/POST /api/public/contract/[token]` — данные для договора
+
+**CRM лидов:**
+- `/leads` — таблица лидов со статистикой, фильтрами (статус, источник, поиск)
+- `/leads/[id]` — детали лида, редактирование, действия
+- Действия: связаться, квалифицировать, переговоры, отправить форму договора, конвертировать в сделку, отклонить
+- Конвертация: Lead → Client + Deal в одной транзакции
+
+**Поток автозаполнения договора:**
+- Менеджер генерирует contractToken и отправляет ссылку клиенту
+- Клиент заполняет `/contract/[token]`: ФИО, паспорт, адреса
+- Данные сохраняются в `Lead.contractData` (JSON)
+- Менеджер проверяет (премодерация) и конвертирует в сделку
+
+### Файлы
+
+**Новые:**
+- `prisma/migrations/20260301090733_add_leads_model/`
+- `src/app/(public)/layout.tsx` — публичный layout
+- `src/app/(public)/page.tsx` — лендинг
+- `src/app/(public)/contract/[token]/page.tsx` — форма договора
+- `src/components/public/landing-client.tsx` — основной клиентский компонент лендинга
+- `src/components/public/stations-section.tsx` — live-секция станций
+- `src/components/public/booking-form.tsx` — форма бронирования
+- `src/components/public/contract-form-client.tsx` — форма данных для договора
+- `src/app/api/public/stations/route.ts`
+- `src/app/api/public/leads/route.ts`
+- `src/app/api/public/contract/[token]/route.ts`
+- `src/app/(dashboard)/leads/page.tsx` — список лидов
+- `src/app/(dashboard)/leads/[id]/page.tsx` — детали лида
+- `src/app/(dashboard)/dashboard/page.tsx` — перенесённый дашборд
+- `src/services/leads.ts` — сервис лидов
+- `src/actions/leads.ts` — server actions лидов
+- `src/domain/leads/validation.ts` — Zod-схемы
+- `src/components/leads/leads-filters-bar.tsx`
+- `src/components/leads/lead-actions.tsx`
+- `src/components/leads/lead-edit-form.tsx`
+
+**Изменённые:**
+- `prisma/schema.prisma` — модель Lead + enums + обратные связи
+- `src/middleware.ts` — публичные маршруты
+- `src/lib/constants.ts` — константы лидов
+- `src/components/layout/nav-items.ts` — навигация
+- `src/components/layout/sidebar.tsx` — ссылка на /dashboard
+- `src/components/layout/mobile-sidebar.tsx` — ссылка на /dashboard
+- `src/components/shared/page-header.tsx` — backHref prop
+- `src/actions/deals.ts`, `payments.ts`, `logistics.ts` — revalidatePath("/dashboard")
+
+---
+
 ## 2026-03-01 — Календарь: zoom-контроль для Timeline и Month Grid
 
 ### Что сделано

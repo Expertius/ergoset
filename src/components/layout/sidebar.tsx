@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { navGroups } from "./nav-items";
+import { getFilteredNavGroups } from "./nav-items";
 import { useSidebar } from "./sidebar-context";
+import { useUser } from "./user-context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
@@ -18,6 +19,9 @@ import { Button } from "@/components/ui/button";
 export function Sidebar() {
   const pathname = usePathname();
   const { collapsed, sidebarWidth, toggle } = useSidebar();
+  const { role } = useUser();
+
+  const filteredGroups = getFilteredNavGroups(role);
 
   return (
     <aside
@@ -26,7 +30,7 @@ export function Sidebar() {
     >
       <div className="flex h-14 items-center border-b px-3">
         <Link
-          href="/"
+          href="/dashboard"
           className={cn(
             "flex items-center gap-2 font-bold text-lg overflow-hidden",
             collapsed && "justify-center"
@@ -40,7 +44,7 @@ export function Sidebar() {
       <ScrollArea className="flex-1 overflow-hidden py-2">
         <TooltipProvider delayDuration={0}>
           <nav className={cn("space-y-4", collapsed ? "px-1" : "px-2")}>
-            {navGroups.map((group) => (
+            {filteredGroups.map((group) => (
               <div key={group.label}>
                 {!collapsed && (
                   <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">

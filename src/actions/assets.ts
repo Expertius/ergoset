@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { assetCreateSchema, assetUpdateSchema } from "@/domain/assets/validation";
 import * as assetService from "@/services/assets";
 import { logAudit } from "@/lib/audit";
+import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
 
 export type ActionResult = {
   success: boolean;
@@ -11,6 +13,8 @@ export type ActionResult = {
 };
 
 export async function createAssetAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   const raw = Object.fromEntries(formData.entries());
   const parsed = assetCreateSchema.safeParse({
     ...raw,
@@ -35,6 +39,8 @@ export async function createAssetAction(formData: FormData): Promise<ActionResul
 }
 
 export async function updateAssetAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   const raw = Object.fromEntries(formData.entries());
   const parsed = assetUpdateSchema.safeParse({
     ...raw,
@@ -60,6 +66,8 @@ export async function updateAssetAction(formData: FormData): Promise<ActionResul
 }
 
 export async function deleteAssetAction(id: string): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   try {
     await assetService.deleteAsset(id);
     await logAudit("asset", id, "delete");

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { inventoryAdjustSchema } from "@/domain/inventory/validation";
 import * as inventoryService from "@/services/inventory";
+import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
 
 export type ActionResult = {
   success: boolean;
@@ -10,6 +12,8 @@ export type ActionResult = {
 };
 
 export async function adjustInventoryAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "LOGISTICS");
   const raw = Object.fromEntries(formData.entries());
   const parsed = inventoryAdjustSchema.safeParse(raw);
 

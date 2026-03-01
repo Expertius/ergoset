@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
 import { getClients } from "@/services/clients";
 import { PageHeader } from "@/components/shared/page-header";
 import { SortableHeader } from "@/components/shared/sortable-header";
@@ -24,10 +26,14 @@ type Props = {
 };
 
 export default async function ClientsPage({ searchParams }: Props) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
   const params = await searchParams;
   const clients = await getClients({
     search: params.search,
     tag: params.tag,
+    scopeByManagerId: session.role === "MANAGER" ? session.id : undefined,
     sortBy: params.sortBy,
     sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
   });

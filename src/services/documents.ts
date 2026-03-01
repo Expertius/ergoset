@@ -23,6 +23,7 @@ export type DocumentFilters = {
   status?: DocumentStatus;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  scopeByManagerId?: string;
 };
 
 export async function getDocuments(filters?: DocumentFilters) {
@@ -30,6 +31,9 @@ export async function getDocuments(filters?: DocumentFilters) {
   if (filters?.dealId) where.dealId = filters.dealId;
   if (filters?.type) where.type = filters.type;
   if (filters?.status) where.status = filters.status;
+  if (filters?.scopeByManagerId) {
+    where.deal = { ...((where.deal as Record<string, unknown>) || {}), createdById: filters.scopeByManagerId };
+  }
 
   const sortField = filters?.sortBy || "createdAt";
   const sortDir = filters?.sortOrder || "desc";

@@ -6,6 +6,7 @@ export type ClientFilters = {
   tag?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  scopeByManagerId?: string;
 };
 
 export async function getClients(filters?: ClientFilters) {
@@ -21,6 +22,10 @@ export async function getClients(filters?: ClientFilters) {
 
   if (filters?.tag) {
     where.tags = { has: filters.tag };
+  }
+
+  if (filters?.scopeByManagerId) {
+    where.deals = { some: { createdById: filters.scopeByManagerId } };
   }
 
   const sortField = filters?.sortBy || "createdAt";

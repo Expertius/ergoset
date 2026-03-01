@@ -14,6 +14,7 @@ export type PaymentFilters = {
   dealId?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  scopeByManagerId?: string;
 };
 
 export async function getPayments(filters?: PaymentFilters) {
@@ -21,6 +22,10 @@ export async function getPayments(filters?: PaymentFilters) {
   if (filters?.status) where.status = filters.status;
   if (filters?.kind) where.kind = filters.kind;
   if (filters?.dealId) where.dealId = filters.dealId;
+
+  if (filters?.scopeByManagerId) {
+    where.deal = { ...((where.deal as Record<string, unknown>) || {}), createdById: filters.scopeByManagerId };
+  }
 
   if (filters?.search) {
     where.deal = {

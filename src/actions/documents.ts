@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import type { DocumentType, DocumentStatus } from "@/generated/prisma/browser";
 import * as docService from "@/services/documents";
+import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
 
 export type ActionResult = {
   success: boolean;
@@ -14,6 +16,8 @@ export async function generateDocumentAction(
   docType: string,
   rentalId?: string
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   try {
     await docService.generateDocument(
       dealId,
@@ -33,6 +37,8 @@ export async function updateDocumentStatusAction(
   id: string,
   status: string
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   try {
     await docService.updateDocumentStatus(id, status as DocumentStatus);
     revalidatePath("/documents");

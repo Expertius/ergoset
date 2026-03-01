@@ -1,4 +1,5 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
 import { getDealById } from "@/services/deals";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -26,8 +27,15 @@ type Props = {
 };
 
 export default async function DealDetailPage({ params }: Props) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
   const { id } = await params;
   const deal = await getDealById(id);
+
+  if (deal && session.role === "MANAGER" && deal.createdById !== session.id) {
+    notFound();
+  }
 
   if (!deal) return notFound();
 

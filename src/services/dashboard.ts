@@ -116,6 +116,7 @@ export type CalendarFilters = {
   statuses?: DealStatus[];
   dealType?: DealType;
   search?: string;
+  createdById?: string;
 };
 
 export async function getCalendarEvents(
@@ -134,6 +135,7 @@ export async function getCalendarEvents(
   if (filters?.assetId) rentalWhere.assetId = filters.assetId;
 
   const dealWhere: Record<string, unknown> = {};
+  if (filters?.createdById) dealWhere.createdById = filters.createdById;
   if (filters?.clientId) dealWhere.clientId = filters.clientId;
   if (filters?.statuses?.length) dealWhere.status = { in: filters.statuses };
   if (filters?.dealType) dealWhere.type = filters.dealType;

@@ -13,6 +13,7 @@ enum UserRole {
   ADMIN
   MANAGER
   LOGISTICS
+  CLIENT
 }
 
 enum AssetStatus {
@@ -141,6 +142,33 @@ enum AccessoryCategory {
   other
 }
 
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  negotiation
+  contract_pending
+  contract_filled
+  converted
+  rejected
+}
+
+enum LeadSource {
+  website
+  phone
+  referral
+  social
+  ads
+  other
+}
+
+enum LeadInterest {
+  rent
+  buy
+  rent_to_purchase
+  info
+}
+
 // ─── MODELS ─────────────────────────────────────────────
 
 model User {
@@ -156,6 +184,8 @@ model User {
   createdDeals      Deal[]             @relation("DealCreatedBy")
   auditLogs         AuditLog[]
   deliveryComments  DeliveryComment[]
+  assignedLeads     Lead[]             @relation("LeadAssigned")
+  clientProfile     Client?            @relation("ClientUser")
 
   @@map("users")
 }
@@ -185,6 +215,7 @@ model Asset {
   rentals        Rental[]
   expenses       Expense[]
   configurations ConfigurationLine[] @relation("AssetConfigurations")
+  leads          Lead[]
 
   @@map("assets")
 }
@@ -276,10 +307,15 @@ model Client {
   notes                String?
   deliveryNotes        String?
   tags                 String[]
+  userId               String?   @unique
+  inviteToken          String?   @unique
+  inviteExpiresAt      DateTime?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
+  user   User?  @relation("ClientUser", fields: [userId], references: [id])
   deals  Deal[]
+  leads  Lead[]
 
   @@map("clients")
 }
@@ -304,6 +340,7 @@ model Deal {
   payments   Payment[]
   expenses   Expense[]
   documents  Document[]
+  leads      Lead[]
 
   @@map("deals")
 }
@@ -600,4 +637,38 @@ model ServiceCatalog {
   createdAt   DateTime @default(now())
 
   @@map("service_catalog")
+}
+
+// ─── LEADS ──────────────────────────────────────────────
+
+model Lead {
+  id                String       @id @default(cuid())
+  name              String
+  phone             String?
+  email             String?
+  interest          LeadInterest @default(rent)
+  desiredAssetId    String?
+  desiredConfig     String?
+  desiredStartDate  DateTime?
+  desiredMonths     Int?
+  source            LeadSource   @default(website)
+  status            LeadStatus   @default(new)
+  notes             String?
+  managerNotes      String?
+  assignedToId      String?
+  contractToken     String?      @unique
+  contractData      Json?
+  convertedClientId String?
+  convertedDealId   String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  contactedAt       DateTime?
+  convertedAt       DateTime?
+
+  desiredAsset    Asset?  @relation(fields: [desiredAssetId], references: [id])
+  assignedTo      User?   @relation("LeadAssigned", fields: [assignedToId], references: [id])
+  convertedClient Client? @relation(fields: [convertedClientId], references: [id])
+  convertedDeal   Deal?   @relation(fields: [convertedDealId], references: [id])
+
+  @@map("leads")
 }

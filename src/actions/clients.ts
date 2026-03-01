@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { clientCreateSchema, clientUpdateSchema } from "@/domain/clients/validation";
 import * as clientService from "@/services/clients";
+import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
 
 export type ActionResult = {
   success: boolean;
@@ -10,6 +12,8 @@ export type ActionResult = {
 };
 
 export async function createClientAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   const raw = Object.fromEntries(formData.entries());
   const tagsRaw = formData.get("tags") as string;
   const parsed = clientCreateSchema.safeParse({
@@ -32,6 +36,8 @@ export async function createClientAction(formData: FormData): Promise<ActionResu
 }
 
 export async function updateClientAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   const raw = Object.fromEntries(formData.entries());
   const tagsRaw = formData.get("tags") as string;
   const parsed = clientUpdateSchema.safeParse({

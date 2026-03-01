@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { buildDealScope } from "@/lib/rbac";
 import { getDeals } from "@/services/deals";
 import { PageHeader } from "@/components/shared/page-header";
 import { SortableHeader } from "@/components/shared/sortable-header";
@@ -32,6 +35,10 @@ type Props = {
 };
 
 export default async function DealsPage({ searchParams }: Props) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const scope = buildDealScope(session);
   const params = await searchParams;
   const deals = await getDeals({
     search: params.search,
@@ -39,6 +46,7 @@ export default async function DealsPage({ searchParams }: Props) {
     type: params.type as DealType | undefined,
     sortBy: params.sortBy,
     sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
+    ...scope,
   });
 
   return (

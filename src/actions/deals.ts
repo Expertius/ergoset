@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { dealQuickCreateSchema, rentalExtendSchema } from "@/domain/deals/validation";
 import * as dealService from "@/services/deals";
 import { logAudit } from "@/lib/audit";
+import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
 
 export type ActionResult = {
   success: boolean;
@@ -12,6 +14,8 @@ export type ActionResult = {
 };
 
 export async function createDealAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   const raw = Object.fromEntries(formData.entries());
   const accessoriesJson = raw.accessories as string | undefined;
   let accessories: { accessoryId: string; qty: number; price: number; isIncluded: boolean }[] = [];
@@ -41,7 +45,7 @@ export async function createDealAction(formData: FormData): Promise<ActionResult
     revalidatePath("/deals");
     revalidatePath("/assets");
     revalidatePath("/calendar");
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return { success: true, id: deal.id };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка создания сделки";
@@ -50,6 +54,8 @@ export async function createDealAction(formData: FormData): Promise<ActionResult
 }
 
 export async function extendRentalAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   const raw = Object.fromEntries(formData.entries());
   const parsed = rentalExtendSchema.safeParse({
     ...raw,
@@ -72,7 +78,7 @@ export async function extendRentalAction(formData: FormData): Promise<ActionResu
     });
     revalidatePath("/deals");
     revalidatePath("/calendar");
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return { success: true, id: extensionDeal.id };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка продления";
@@ -81,13 +87,15 @@ export async function extendRentalAction(formData: FormData): Promise<ActionResu
 }
 
 export async function closeByReturnAction(rentalId: string): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   try {
     await dealService.closeRentalByReturn(rentalId);
     await logAudit("rental", rentalId, "close_return");
     revalidatePath("/deals");
     revalidatePath("/assets");
     revalidatePath("/calendar");
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка закрытия";
@@ -99,13 +107,15 @@ export async function closeByBuyoutAction(
   rentalId: string,
   purchaseAmount?: number
 ): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   try {
     await dealService.closeRentalByBuyout(rentalId, purchaseAmount);
     await logAudit("rental", rentalId, "close_buyout", { purchaseAmount });
     revalidatePath("/deals");
     revalidatePath("/assets");
     revalidatePath("/calendar");
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка оформления выкупа";
@@ -114,13 +124,15 @@ export async function closeByBuyoutAction(
 }
 
 export async function cancelDealAction(dealId: string): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   try {
     await dealService.cancelDeal(dealId);
     await logAudit("deal", dealId, "cancel");
     revalidatePath("/deals");
     revalidatePath("/assets");
     revalidatePath("/calendar");
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка отмены сделки";
@@ -129,13 +141,15 @@ export async function cancelDealAction(dealId: string): Promise<ActionResult> {
 }
 
 export async function activateDealAction(dealId: string): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   try {
     await dealService.activateDeal(dealId);
     await logAudit("deal", dealId, "activate");
     revalidatePath("/deals");
     revalidatePath("/assets");
     revalidatePath("/calendar");
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка активации";

@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { buildDealScope } from "@/lib/rbac";
 import { getCalendarEvents } from "@/services/dashboard";
 import { getAssets } from "@/services/assets";
 import { PageHeader } from "@/components/shared/page-header";
@@ -18,6 +21,10 @@ type Props = {
 };
 
 export default async function CalendarPage({ searchParams }: Props) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const dealScope = buildDealScope(session);
   const params = await searchParams;
   const now = new Date();
   const month =
@@ -42,6 +49,7 @@ export default async function CalendarPage({ searchParams }: Props) {
       dealType: params.type as DealType | undefined,
       assetId: params.asset,
       search: params.search,
+      ...dealScope,
     }),
     getAssets(),
   ]);

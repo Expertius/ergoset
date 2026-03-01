@@ -2,6 +2,7 @@ import type {
   AssetStatus, DealStatus, DealType, PaymentKind, PaymentStatus,
   PaymentMethod, AccessoryCategory, ExpenseCategory, DocumentType,
   DocumentStatus, DeliveryTaskType, DeliveryTaskStatus,
+  LeadStatus, LeadSource, LeadInterest,
 } from "@/generated/prisma/browser";
 
 /** Base station price in kopecks (239 990 ₽) */
@@ -188,4 +189,51 @@ export const DELIVERY_TASK_TYPE_COLORS: Record<DeliveryTaskType, string> = {
   pickup: "bg-orange-100 text-orange-800",
   replacement: "bg-teal-100 text-teal-800",
   maintenance_visit: "bg-purple-100 text-purple-800",
+};
+
+// ─── LEADS ──────────────────────────────────────────────
+
+export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
+  new: "Новый",
+  contacted: "Связались",
+  qualified: "Квалифицирован",
+  negotiation: "Переговоры",
+  contract_pending: "Ожидание данных",
+  contract_filled: "Данные заполнены",
+  converted: "Конвертирован",
+  rejected: "Отклонён",
+};
+
+export const LEAD_STATUS_COLORS: Record<LeadStatus, string> = {
+  new: "bg-blue-100 text-blue-800",
+  contacted: "bg-cyan-100 text-cyan-800",
+  qualified: "bg-emerald-100 text-emerald-800",
+  negotiation: "bg-yellow-100 text-yellow-800",
+  contract_pending: "bg-orange-100 text-orange-800",
+  contract_filled: "bg-indigo-100 text-indigo-800",
+  converted: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-800",
+};
+
+export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
+  website: "Сайт",
+  phone: "Телефон",
+  referral: "Рекомендация",
+  social: "Соцсети",
+  ads: "Реклама",
+  other: "Другое",
+};
+
+export const LEAD_INTEREST_LABELS: Record<LeadInterest, string> = {
+  rent: "Аренда",
+  buy: "Покупка",
+  rent_to_purchase: "Аренда с выкупом",
+  info: "Информация",
+};
+
+export const LEAD_INTEREST_COLORS: Record<LeadInterest, string> = {
+  rent: "bg-blue-100 text-blue-800",
+  buy: "bg-purple-100 text-purple-800",
+  rent_to_purchase: "bg-indigo-100 text-indigo-800",
+  info: "bg-gray-100 text-gray-800",
 };

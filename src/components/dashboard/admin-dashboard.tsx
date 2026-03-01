@@ -31,7 +31,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-export default async function DashboardPage() {
+export async function AdminDashboard() {
   const [
     stats,
     comparison,
@@ -65,7 +65,6 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* ─── Row 1: Asset stats ──────────────────────── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -109,14 +108,12 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* ─── Row 2–3: Financial KPIs with delivery toggle ─ */}
       <DeliveryCostToggle
         comparison={JSON.parse(JSON.stringify(comparison))}
         kpis={JSON.parse(JSON.stringify(kpis))}
         deliveryCosts={deliveryCosts}
       />
 
-      {/* ─── Row 4: Trend charts ─────────────────────── */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -138,7 +135,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* ─── Row 5: Breakdown charts ─────────────────── */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -172,7 +168,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* ─── Row 6: Top rankings ─────────────────────── */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -204,7 +199,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* ─── Row 7: Upcoming returns + notifications ── */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>

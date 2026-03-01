@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { canSeeRetailPrices } from "@/lib/rbac";
 import { getAccessories } from "@/services/accessories";
 import { PageHeader } from "@/components/shared/page-header";
 import { SortableHeader } from "@/components/shared/sortable-header";
@@ -26,6 +29,12 @@ type Props = {
 };
 
 export default async function AccessoriesPage({ searchParams }: Props) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const showPrices = canSeeRetailPrices(session.role);
+  const isAdmin = session.role === "ADMIN";
+
   const params = await searchParams;
   const accessories = await getAccessories({
     search: params.search,
@@ -39,8 +48,8 @@ export default async function AccessoriesPage({ searchParams }: Props) {
       <PageHeader
         title="Аксессуары"
         description={`Всего: ${accessories.length}`}
-        createHref="/accessories/new"
-        createLabel="Добавить аксессуар"
+        createHref={isAdmin ? "/accessories/new" : undefined}
+        createLabel={isAdmin ? "Добавить аксессуар" : undefined}
       />
 
       <AccessoryFiltersBar />
@@ -55,13 +64,15 @@ export default async function AccessoriesPage({ searchParams }: Props) {
               <TableHead className="text-center">На складе</TableHead>
               <TableHead className="text-center">Зарезерв.</TableHead>
               <TableHead className="text-center">Доступно</TableHead>
-              <SortableHeader column="retailPrice" label="Розница" basePath="/accessories" className="text-right" />
+              {showPrices && (
+                <SortableHeader column="retailPrice" label="Розница" basePath="/accessories" className="text-right" />
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {accessories.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={showPrices ? 7 : 6} className="text-center text-muted-foreground py-8">
                   Аксессуары не найдены
                 </TableCell>
               </TableRow>
@@ -95,9 +106,11 @@ export default async function AccessoriesPage({ searchParams }: Props) {
                       {available}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right">
-                    {acc.retailPrice ? formatCurrency(acc.retailPrice) : "—"}
-                  </TableCell>
+                  {showPrices && (
+                    <TableCell className="text-right">
+                      {acc.retailPrice ? formatCurrency(acc.retailPrice) : "—"}
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })}

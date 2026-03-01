@@ -1,6 +1,7 @@
 "use server";
 
 import { login, logout } from "@/lib/auth";
+import { getHomeRoute } from "@/lib/rbac";
 import { redirect } from "next/navigation";
 
 export async function loginAction(formData: FormData) {
@@ -16,7 +17,7 @@ export async function loginAction(formData: FormData) {
     return { error: "Неверный email или пароль" };
   }
 
-  redirect("/");
+  redirect(getHomeRoute(user.role));
 }
 
 export async function logoutAction() {

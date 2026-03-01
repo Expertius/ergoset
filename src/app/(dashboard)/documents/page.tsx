@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
 import { getDocuments } from "@/services/documents";
 import { PageHeader } from "@/components/shared/page-header";
 import { SortableHeader } from "@/components/shared/sortable-header";
@@ -30,8 +32,12 @@ type Props = {
 };
 
 export default async function DocumentsPage({ searchParams }: Props) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
   const params = await searchParams;
   const documents = await getDocuments({
+    scopeByManagerId: session.role === "MANAGER" ? session.id : undefined,
     type: params.type as DocumentType | undefined,
     status: params.status as DocumentStatus | undefined,
     sortBy: params.sortBy,

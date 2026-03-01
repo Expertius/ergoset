@@ -11,6 +11,7 @@ export type DealFilters = {
   type?: DealType;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  createdById?: string;
 };
 
 const BLOCKING_STATUSES: DealStatus[] = [
@@ -25,6 +26,7 @@ const BLOCKING_STATUSES: DealStatus[] = [
 export async function getDeals(filters?: DealFilters) {
   const where: Record<string, unknown> = {};
 
+  if (filters?.createdById) where.createdById = filters.createdById;
   if (filters?.status) where.status = filters.status;
   if (filters?.type) where.type = filters.type;
 

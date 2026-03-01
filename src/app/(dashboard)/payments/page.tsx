@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { canSeeExpenses, canSeeFinancials } from "@/lib/rbac";
 import { getPayments, getExpenses, getFinanceSummary } from "@/services/payments";
 import { PageHeader } from "@/components/shared/page-header";
 import { SortableHeader } from "@/components/shared/sortable-header";
@@ -36,6 +39,13 @@ type Props = {
 };
 
 export default async function PaymentsPage({ searchParams }: Props) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const showExpenses = canSeeExpenses(session.role);
+  const showFinancials = canSeeFinancials(session.role);
+  const managerScope = session.role === "MANAGER" ? session.id : undefined;
+
   const params = await searchParams;
   const [payments, expenses, summary] = await Promise.all([
     getPayments({
@@ -44,9 +54,10 @@ export default async function PaymentsPage({ searchParams }: Props) {
       kind: params.kind as PaymentKind | undefined,
       sortBy: params.sortBy,
       sortOrder: (params.sortOrder as "asc" | "desc") || undefined,
+      scopeByManagerId: managerScope,
     }),
-    getExpenses(),
-    getFinanceSummary(),
+    showExpenses ? getExpenses() : Promise.resolve([]),
+    showFinancials ? getFinanceSummary() : Promise.resolve({ totalIncome: 0, totalExpenses: 0, profit: 0 }),
   ]);
 
   const summaryCards = [

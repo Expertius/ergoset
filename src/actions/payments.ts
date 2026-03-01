@@ -8,6 +8,8 @@ import {
 } from "@/domain/payments/validation";
 import * as paymentService from "@/services/payments";
 import { logAudit } from "@/lib/audit";
+import { getSession } from "@/lib/auth";
+import { requireRole } from "@/lib/rbac";
 
 export type ActionResult = {
   success: boolean;
@@ -15,6 +17,8 @@ export type ActionResult = {
 };
 
 export async function createPaymentAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   const raw = Object.fromEntries(formData.entries());
   const parsed = paymentCreateSchema.safeParse({
     ...raw,
@@ -30,7 +34,7 @@ export async function createPaymentAction(formData: FormData): Promise<ActionRes
     await logAudit("payment", payment.id, "create", { kind: parsed.data.kind, amount: parsed.data.amount });
     revalidatePath("/payments");
     revalidatePath("/deals");
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка создания платежа";
@@ -39,6 +43,8 @@ export async function createPaymentAction(formData: FormData): Promise<ActionRes
 }
 
 export async function updatePaymentAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   const raw = Object.fromEntries(formData.entries());
   const parsed = paymentUpdateSchema.safeParse({
     ...raw,
@@ -61,6 +67,8 @@ export async function updatePaymentAction(formData: FormData): Promise<ActionRes
 }
 
 export async function deletePaymentAction(id: string): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN", "MANAGER");
   try {
     await paymentService.deletePayment(id);
     revalidatePath("/payments");
@@ -72,6 +80,8 @@ export async function deletePaymentAction(id: string): Promise<ActionResult> {
 }
 
 export async function createExpenseAction(formData: FormData): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   const raw = Object.fromEntries(formData.entries());
   const parsed = expenseCreateSchema.safeParse({
     ...raw,
@@ -86,7 +96,7 @@ export async function createExpenseAction(formData: FormData): Promise<ActionRes
     const expense = await paymentService.createExpense(parsed.data);
     await logAudit("expense", expense.id, "create", { category: parsed.data.category, amount: parsed.data.amount });
     revalidatePath("/payments");
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Ошибка создания расхода";
@@ -95,6 +105,8 @@ export async function createExpenseAction(formData: FormData): Promise<ActionRes
 }
 
 export async function deleteExpenseAction(id: string): Promise<ActionResult> {
+  const session = await getSession();
+  requireRole(session, "ADMIN");
   try {
     await paymentService.deleteExpense(id);
     revalidatePath("/payments");
