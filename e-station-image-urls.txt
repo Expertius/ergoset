@@ -1,0 +1,103 @@
+=== E-STATION.TECH - ALL IMAGE AND MEDIA URLS ===
+
+=== VIDEOS ===
+https://e-station.tech/local/templates/easyworkstation/assets/main.webm
+
+=== LOGOS & BRANDING ===
+https://e-station.tech/logo.svg
+https://e-station.tech/local/templates/easyworkstation/dist/images/logo.401d65e5.svg
+
+=== SOCIAL MEDIA ICONS ===
+https://e-station.tech/local/templates/easyworkstation/dist/images/vk.d1cd7fdc.svg
+https://e-station.tech/local/templates/easyworkstation/dist/images/tg.ccd878e5.svg
+https://e-station.tech/local/templates/easyworkstation/dist/images/whatapp.d021e82f.svg
+
+=== UI ICONS & ELEMENTS ===
+https://e-station.tech/local/templates/easyworkstation/dist/images/accordion-arrow.81f92821.svg
+https://e-station.tech/local/templates/easyworkstation/dist/images/arrow-btn.7de21460.svg
+https://e-station.tech/local/templates/easyworkstation/dist/images/arrow-down-new.ddfe7a3d.svg
+https://e-station.tech/local/templates/easyworkstation/dist/images/checkbox-off.a8d5ae42.svg
+https://e-station.tech/local/templates/easyworkstation/dist/images/close.8602e2b8.svg
+https://e-station.tech/images/show3D.svg
+
+=== BACKGROUNDS & DECORATIVE ===
+https://e-station.tech/local/templates/easyworkstation/dist/images/background-quality.9fb59ad1.svg
+
+=== LOCATION/MAP ===
+https://e-station.tech/local/templates/easyworkstation/dist/images/moscow.e1c36580.png
+
+=== HERO/BANNER IMAGES ===
+https://e-station.tech/images/t_banner.jpg
+https://e-station.tech/images/t_banner_mob.jpg
+https://e-station.tech/images/t_banner_table.jpg
+
+=== PRODUCT IMAGES - TECHNICAL DIAGRAMS ===
+https://e-station.tech/images/sizesStation.webp
+https://e-station.tech/images/sizesStation1.webp
+https://e-station.tech/images/model-plug-desk.webp
+https://e-station.tech/upload/iblock/826/rq1odmrfyuhyrchd3fkpyw0werr64j4l.svg
+https://e-station.tech/upload/iblock/dbd/8z1r2prrhrnguxc9kcluv5hmnxbvmqtj.svg
+
+=== PRODUCT IMAGES - POSITION VIEWS (1-4) ===
+https://e-station.tech/local/templates/easyworkstation/dist/images/1.0944f910.webp
+https://e-station.tech/local/templates/easyworkstation/dist/images/2.5c505854.webp
+https://e-station.tech/local/templates/easyworkstation/dist/images/3.5d731755.webp
+https://e-station.tech/local/templates/easyworkstation/dist/images/4.2aa215fb.webp
+
+=== PRODUCT IMAGES - FULL SIZE (UPLOAD/IBLOCK) ===
+https://e-station.tech/upload/iblock/076/9dlwv4wqfqnzw9t0kkhp7ppbpcd7i1nu.png
+https://e-station.tech/upload/iblock/0d5/wwbzuyghhu8j9x95nijikcg0px34uxbq.png
+https://e-station.tech/upload/iblock/10a/yhg24zrxbkfu2yoec1ltgh92x7sgfvz9.webp
+https://e-station.tech/upload/iblock/146/5g901t8i0nlyxgfh3i97y18j24ntpkpu.webp
+https://e-station.tech/upload/iblock/237/h12q50q2e6nkuezoef19ev4qkhsdq9qh.webp
+https://e-station.tech/upload/iblock/264/81bdxw2d86xfv9d417dp5es1srexmfs9.webp
+https://e-station.tech/upload/iblock/272/w5di4tdunz0mudpt0ob3eipsjfu7233j.jpg
+https://e-station.tech/upload/iblock/27f/nnlos6wy65zgkqmuedhl1llc0s9cesvs.webp
+https://e-station.tech/upload/iblock/3b7/7oulxvw77m56c330w69dl6p704pw8v0s.webp
+https://e-station.tech/upload/iblock/3ca/5c0znptlihkrjoi60hsecdl72zu5pwip.png
+https://e-station.tech/upload/iblock/3e9/pgplhwyeu9sfe9qniuyqygyzo0wqiuip.webp
+https://e-station.tech/upload/iblock/42c/78i917u0p7ao17z34f10oq7bbovaw0zc.webp
+https://e-station.tech/upload/iblock/436/7r4ojjxrp9m2ua8epmtdkt19hghlj7st.png
+https://e-station.tech/upload/iblock/5ff/ilma4mho2y3j98p696r906flr329n2bp.webp
+https://e-station.tech/upload/iblock/781/dtnriualm69f85v74007zovrl5giynh5.webp
+https://e-station.tech/upload/iblock/923/uj3rognvl5w26b1eq4ofh6mxwnyetu79.webp
+https://e-station.tech/upload/iblock/92b/vs9optawn1jhs8px9zq1o0w8gj1r1prb.jpg
+https://e-station.tech/upload/iblock/9c4/mjciz2y2b9qk7sqf3mxyerp8gmyxdgd1.webp
+https://e-station.tech/upload/iblock/ae8/21p6bfrv2677802aq2slv4dyaepit9ts.png
+https://e-station.tech/upload/iblock/c08/tupt12gb98t5vsedych3r3o114kd706c.png
+https://e-station.tech/upload/iblock/cb9/mc8o95ck5iemvsmrxk12kvl2zrlnddnl.png
+https://e-station.tech/upload/iblock/e79/xo42pyu44ng1ty0tf1qdrttggkestlk5.webp
+https://e-station.tech/upload/iblock/e7e/f6cfz5m0w9zbvxkvtohud61fuqblywr2.webp
+https://e-station.tech/upload/iblock/f1c/trk1as1bafyhvwak0sb4vhkzneaw5tzr.png
+
+=== PRODUCT IMAGES - RESIZED THUMBNAILS (600x500) ===
+https://e-station.tech/upload/resize_cache/iblock/56e/600_500_1/054vf14xngzyl1njgmig5rc0h51h96xw.webp
+https://e-station.tech/upload/resize_cache/iblock/778/600_500_1/fmu6loi482hjuajsl4j3ecbh0izbpsw2.webp
+https://e-station.tech/upload/resize_cache/iblock/8fc/600_500_1/h4p36116qe3q9p2hd3dr40zod43wp2oi.webp
+
+=== PRODUCT IMAGES - RESIZED THUMBNAILS (600x600) ===
+https://e-station.tech/upload/resize_cache/iblock/1f8/600_600_1/tk828po4uz80mjz3ndsk9czewrpfprh8.png
+https://e-station.tech/upload/resize_cache/iblock/203/600_600_1/4n1hjfo4i3z8m0tshe0ywn0wzdajlh2i.webp
+https://e-station.tech/upload/resize_cache/iblock/263/600_600_1/lxgndy2ffgj4q44yd621pmfsr8z1n8pp.png
+https://e-station.tech/upload/resize_cache/iblock/363/600_600_1/1p18asoltb95dnhjf2gvec27n9acclxe.jpg
+https://e-station.tech/upload/resize_cache/iblock/b4a/600_600_1/4vmaee9wknwvve2nc88dz7r6a1yiekpj.png
+https://e-station.tech/upload/resize_cache/iblock/e23/600_600_1/b0x8nxeju55uspdr6cvch4zrbosmiiyk.webp
+
+=== PRODUCT IMAGES - RESIZED THUMBNAILS (600x240) ===
+https://e-station.tech/upload/resize_cache/iblock/28a/600_240_1/gv9tor7agwc236kik0jl5zfkokmh2kvo.webp
+https://e-station.tech/upload/resize_cache/iblock/70a/600_240_1/oecgmym0ndl35vmek19jndnlllbiaa2p.png
+https://e-station.tech/upload/resize_cache/iblock/92c/600_240_1/fii7ekidl2d1edra55832zj4gkeqlvqy.png
+https://e-station.tech/upload/resize_cache/iblock/ad1/600_240_1/ee0qqy2mdf20zgq58vsdnxlwiyxhfaqu.webp
+https://e-station.tech/upload/resize_cache/iblock/c29/600_240_1/fw450ezrtvtfzhjd12lri32srtsz83xo.webp
+https://e-station.tech/upload/resize_cache/iblock/f30/600_240_1/cuajtsh8n50aiaikidwcvk7t22fslmhj.jpg
+
+=== PRODUCT IMAGES - RESIZED THUMBNAILS (500x420) ===
+https://e-station.tech/upload/resize_cache/iblock/0a2/500_420_1/d3grz2mo5o3j1gas60vocgcx7c9wa1z7.JPEG
+https://e-station.tech/upload/resize_cache/iblock/451/500_420_1/davypp04aevmzxwpuv9r089ftgu2dr8h.jpg
+https://e-station.tech/upload/resize_cache/iblock/654/500_420_1/tksoyd48vnwhezj1cm356p49y4i48zl3.webp
+https://e-station.tech/upload/resize_cache/iblock/df3/500_420_1/9jrtpr7dfq8n8m89p1w0d79u150cte6f.jpg
+
+=== TOTAL COUNT ===
+Total Images: 70
+Total Videos: 1
+Total Media Assets: 71

@@ -1,5 +1,23 @@
 # AI Changelog
 
+## 2026-03-08 — Исправление ChunkLoadError / зависания Turbopack
+
+### Исправлено
+
+- **Turbopack compilation hang**: Tailwind Oxide scanner (`tailwindcss-oxide`) зависал на `readdir_r` при рекурсивном обходе директории `.next-old` (500МБ скомпилированного JS). PostCSS процесс полностью блокировался, вызывая deadlock в Turbopack native SWC.
+- Корневая причина: `@tailwindcss/postcss` по умолчанию сканирует весь корень проекта для поиска CSS-классов. Любая крупная директория (`.next-old`, `src/generated/`) без gitignore-исключения вызывала зависание.
+- Решение: установлен `base: "./src"` в `postcss.config.mjs`, ограничивающий область сканирования Tailwind только директорией `src/`.
+
+### Очистка
+
+- Удалены дубликаты файлов с пробелами в именах из `src/generated/prisma/` (`*" 2.ts"` — 23 файла в models/, internal/, и root)
+- Добавлен `/.next-old/` в `.gitignore`
+
+**Файлы изменены:**
+- `postcss.config.mjs` — добавлен `base: "./src"` в plugin options
+- `.gitignore` — добавлен `/.next-old/`
+- `src/app/globals.css` — убрана лишняя директива `@source not`
+
 ## 2026-03-01 — Предрелизный аудит и рефакторинг
 
 ### Безопасность (P0)
